@@ -81,6 +81,14 @@ class ShoppingList
     // Reads the file back into the list.
     public void Load()
     {
+        // Asked for: fix fel 2, layer 1. If the file is missing the program must still start:
+        // tell the user and begin with an empty list instead of crashing.
+        if (!File.Exists(path))
+        {
+            Console.WriteLine($"Filen {path} finns inte än. Listan börjar tom.");
+            return;
+        }
+
         // Asked for: fix fel 1, layer 2. ReadAllLines splits at every kind of line break and removes it,
         // so no "\r" is left at the end of the names and searching for an item finds it.
         string[] lines = File.ReadAllLines(path);
