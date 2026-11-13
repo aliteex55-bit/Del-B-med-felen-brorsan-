@@ -14,6 +14,13 @@ class Item
             throw new ArgumentException("Namnet får inte vara tomt.", nameof(name));
         }
 
+        // Asked for: utbyggnad U1-2. A negative price is refused with ArgumentOutOfRangeException:
+        // the value is outside what a price may be. 0 kr is allowed, for example a free sample.
+        if (price < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(price), "Priset får inte vara negativt.");
+        }
+
         Name = name;
         Price = price;
     }

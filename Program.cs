@@ -52,6 +52,14 @@ while (true)
         {
             item = new Item(name, price);
         }
+        // Asked for: utbyggnad U1-2. Item refuses a negative price with ArgumentOutOfRangeException.
+        // It must come before catch (ArgumentException): ArgumentOutOfRangeException is a kind of
+        // ArgumentException, so the more specific catch has to be first or it would never be reached.
+        catch (ArgumentOutOfRangeException)
+        {
+            Console.WriteLine("Priset får inte vara negativt. Varan lades inte till.");
+            continue;
+        }
         catch (ArgumentException)
         {
             Console.WriteLine("Namnet får inte vara tomt. Varan lades inte till.");

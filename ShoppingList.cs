@@ -159,6 +159,12 @@ class ShoppingList
             {
                 items.Add(new Item(parts[1], price));
             }
+            // Asked for: utbyggnad U1-2. A line with a negative price, like "-5;Ost", is refused by Item.
+            // The more specific ArgumentOutOfRangeException must be caught before ArgumentException.
+            catch (ArgumentOutOfRangeException)
+            {
+                Console.WriteLine($"En rad i {path} har ett negativt pris och hoppades över: {line}");
+            }
             catch (ArgumentException)
             {
                 Console.WriteLine($"En rad i {path} har ett tomt namn och hoppades över: {line}");
