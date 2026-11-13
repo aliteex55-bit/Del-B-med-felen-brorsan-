@@ -58,7 +58,12 @@ while (true)
             continue;
         }
 
-        list.RemoveAt(number);
+        // Asked for: fix fel 4, layer 2. RemoveAt answers false when the number is not in the list,
+        // so tell the user instead of letting nothing happen without a word.
+        if (!list.RemoveAt(number))
+        {
+            Console.WriteLine($"Nummer {number} finns inte i listan. Ingen vara togs bort.");
+        }
     }
     else if (choice == 3)
     {
