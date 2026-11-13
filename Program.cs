@@ -35,7 +35,15 @@ while (true)
         Console.Write("Namn: ");
         string name = Console.ReadLine();
         Console.Write("Pris: ");
-        int price = int.Parse(Console.ReadLine());
+
+        // Asked for: fix fel 3, layer 2. Letters in the price must not crash the program:
+        // TryParse gives false, the user is told, no item is added and the menu is shown again.
+        if (!int.TryParse(Console.ReadLine(), out int price))
+        {
+            Console.WriteLine("Priset måste vara ett heltal. Varan lades inte till.");
+            continue;
+        }
+
         list.Add(new Item(name, price));
     }
     else if (choice == 2)
