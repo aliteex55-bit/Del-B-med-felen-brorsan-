@@ -89,9 +89,27 @@ class ShoppingList
             return;
         }
 
-        // Asked for: fix fel 1, layer 2. ReadAllLines splits at every kind of line break and removes it,
-        // so no "\r" is left at the end of the names and searching for an item finds it.
-        string[] lines = File.ReadAllLines(path);
+        // Asked for: fix fel 2, layer 2. The file can exist and still fail to read, for example when
+        // another program has it locked or the user has no permission. Catch exactly those errors,
+        // tell the user in Swedish and begin with an empty list instead of crashing.
+        string[] lines;
+
+        try
+        {
+            // Asked for: fix fel 1, layer 2. ReadAllLines splits at every kind of line break and removes it,
+            // so no "\r" is left at the end of the names and searching for an item finds it.
+            lines = File.ReadAllLines(path);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Console.WriteLine($"Programmet får inte läsa {path}. Listan börjar tom, och sparar du skrivs filen över.");
+            return;
+        }
+        catch (IOException)
+        {
+            Console.WriteLine($"Filen {path} gick inte att läsa, till exempel för att ett annat program använder den. Listan börjar tom, och sparar du skrivs filen över.");
+            return;
+        }
 
         foreach (string line in lines)
         {
