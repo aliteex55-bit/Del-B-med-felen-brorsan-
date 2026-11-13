@@ -171,7 +171,13 @@ class ShoppingList
             // Skip that line with a message instead of crashing at start.
             try
             {
-                items.Add(new Item(parts[1], price));
+                // Asked for: utbyggnad U2-3. Load must respect the budget too, so it goes through Add
+                // instead of putting the item straight into the list. A line whose item does not fit is
+                // skipped with a message, like the other lines that cannot be used.
+                if (!Add(new Item(parts[1], price)))
+                {
+                    Console.WriteLine($"En rad i {path} ryms inte i budgeten på {Budget} kr och hoppades över: {line}");
+                }
             }
             // Asked for: utbyggnad U1-2. A line with a negative price, like "-5;Ost", is refused by Item.
             // The more specific ArgumentOutOfRangeException must be caught before ArgumentException.
