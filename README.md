@@ -95,4 +95,19 @@ dotnet run
 
 **Provat:** en vanlig fil ger "Listan är sparad.", och varan finns i filen. En skrivskyddad fil och en fil som ett annat program har öppen ger bara meddelandet att listan inte sparades, och filen är oförändrad.
 
-Designvalet och klassdiagrammet läggs till här efter hand.
+## Utbyggnad
+
+### U1: Item vägrar ogiltiga värden
+
+**Vad krävdes:** konstruktorn i `Item` ska vägra ett tomt namn med `ArgumentException` och ett negativt pris med `ArgumentOutOfRangeException`, i stället för att tyst skapa ett trasigt objekt. Programmet ska inte krascha, och användaren ska få veta vad som hände.
+
+**Före:** ett tomt namn lades till som en vara utan namn, och priset -5 lades till som "Te - -5 kr". Rader som `15;` och `-5;Ost` i `items.txt` blev också sådana varor.
+
+**Så gjordes det, i två steg:**
+
+1. Tomt namn: `Item` kastar `ArgumentException`. `Program.cs` fångar det och säger att namnet inte får vara tomt, och `Load` hoppar över raden med ett meddelande ([9359127](https://github.com/aliteex55-bit/Del1-2brooor/commit/9359127)).
+2. Negativt pris: `Item` kastar `ArgumentOutOfRangeException`. `Program.cs` och `Load` fångar det i en egen `catch` före `catch (ArgumentException)`. Ordningen behövs eftersom `ArgumentOutOfRangeException` är en sorts `ArgumentException`, och programmet tar den första `catch` som passar ([039d36c](https://github.com/aliteex55-bit/Del1-2brooor/commit/039d36c)).
+
+**Provat:** ett tomt namn, ett namn med bara mellanslag och priserna -5 och -1 ger ett meddelande, och ingen vara läggs till. 0 kr är tillåtet. I filen hoppas `15;` och `-5;Ost` över med meddelanden, och resten av listan läses in.
+
+U2 med budgettaket, designvalet och klassdiagrammet läggs till här efter hand.
