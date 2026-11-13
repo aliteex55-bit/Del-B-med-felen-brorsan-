@@ -30,4 +30,17 @@ dotnet run
 
 **Provat:** programmet startar med lärarens `items.txt`, sökningen hittar varorna som syns i listan, listan ser likadan ut efter sparning och omstart, och tomma eller trasiga rader kraschar inte.
 
-Fel 2–6, designvalet och klassdiagrammet läggs till här efter hand.
+### Fel 2: programmet kraschade när items.txt saknades
+
+**Vad hände:** fanns inte `items.txt`, till exempel efter att man döpt om den, kraschade programmet direkt med `FileNotFoundException`. En fil som fanns men inte gick att läsa kraschade också: en fil som ett annat program hade låst gav `IOException`, och en fil som programmet saknade läsrätt till gav `UnauthorizedAccessException`.
+
+**Varför:** `Load` läste filen utan att kontrollera att den fanns, och utan att hantera de fel som kan uppstå när en fil läses.
+
+**Så löstes det, i två steg:**
+
+1. Finns inte filen säger programmet till och börjar med en tom lista. Filen skapas första gången man sparar ([e81c5ac](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/e81c5ac)).
+2. Läsningen ligger i ett `try`, med en `catch` för `UnauthorizedAccessException` och en för `IOException`. Båda skriver ett svenskt meddelande, varnar för att en sparning skriver över filen och börjar med en tom lista ([d9a76a5](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/d9a76a5)).
+
+**Provat:** programmet startar utan `items.txt`, och efter sparning och omstart finns varorna kvar. En låst fil och en fil utan läsrätt ger ett meddelande i stället för en krasch.
+
+Fel 3–6, designvalet och klassdiagrammet läggs till här efter hand.
