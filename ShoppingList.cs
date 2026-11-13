@@ -95,7 +95,16 @@ class ShoppingList
             }
 
             string[] parts = line.Split(';');
-            items.Add(new Item(parts[1], int.Parse(parts[0])));
+
+            // Asked for: fix fel 1, layer 3. A broken line in the file must not crash the program.
+            // It needs a ";" (two parts) and a whole-number price; otherwise tell the user and skip the line.
+            if (parts.Length < 2 || !int.TryParse(parts[0], out int price))
+            {
+                Console.WriteLine($"En rad i {path} kunde inte läsas och hoppades över: {line}");
+                continue;
+            }
+
+            items.Add(new Item(parts[1], price));
         }
     }
 }
