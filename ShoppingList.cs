@@ -81,6 +81,10 @@ class ShoppingList
         try
         {
             File.WriteAllText(path, string.Join("\r\n", lines) + "\r\n");
+
+            // Asked for: fix fel 6, layer 2. Say the list is saved only when the writing actually worked:
+            // this line is reached only if WriteAllText did not throw.
+            Console.WriteLine("Listan är sparad.");
         }
         // Asked for: fix fel 6, layer 1. The catch was empty and caught everything, so a failed save
         // was hidden. Catch only the errors writing a file can give, and tell the user what happened.
@@ -92,8 +96,6 @@ class ShoppingList
         {
             Console.WriteLine($"Filen {path} gick inte att skriva till, till exempel för att ett annat program använder den. Listan sparades inte.");
         }
-
-        Console.WriteLine("Listan är sparad.");
     }
 
     // Reads the file back into the list.
