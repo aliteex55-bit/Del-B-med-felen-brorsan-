@@ -34,7 +34,9 @@ class ShoppingList
     {
         int sum = 0;
 
-        for (int i = 1; i < items.Count; i++)
+        // Asked for: fix fel 5. The first item has index 0, so the loop must start at 0;
+        // starting at 1 left the first item out of the total.
+        for (int i = 0; i < items.Count; i++)
         {
             sum += items[i].Price;
         }
