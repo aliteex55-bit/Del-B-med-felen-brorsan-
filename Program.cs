@@ -49,7 +49,15 @@ while (true)
     else if (choice == 2)
     {
         Console.Write("Nummer: ");
-        int number = int.Parse(Console.ReadLine());
+
+        // Asked for: fix fel 3, layer 3. Letters in the number must not crash the program:
+        // TryParse gives false, the user is told, nothing is removed and the menu is shown again.
+        if (!int.TryParse(Console.ReadLine(), out int number))
+        {
+            Console.WriteLine("Numret måste vara ett heltal. Ingen vara togs bort.");
+            continue;
+        }
+
         list.RemoveAt(number);
     }
     else if (choice == 3)
