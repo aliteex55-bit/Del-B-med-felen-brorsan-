@@ -57,4 +57,19 @@ dotnet run
 
 **Provat:** bokstäver, en tom rad, decimaltal, för stora tal och slut på inmatningen ger ett meddelande i stället för en krasch, både i menyn, i priset och i numret. Ett nummer som är ett heltal men inte finns i listan, till exempel 9, hör till fel 4.
 
-Fel 4–6, designvalet och klassdiagrammet läggs till här efter hand.
+### Fel 4: ett nummer som inte fanns i listan kraschade programmet
+
+**Vad hände:** tog man bort ett nummer som inte fanns kraschade programmet med `ArgumentOutOfRangeException`. Det gällde till exempel `9` när listan hade två varor, `0`, `-1` och `1` i en tom lista.
+
+**Varför:** `RemoveAt` tog bort på platsen `number - 1` utan att kontrollera att den platsen fanns. En plats i listan måste ligga mellan 0 och antalet varor minus 1.
+
+**Så löstes det, i två steg:**
+
+1. `RemoveAt` i `ShoppingList` kontrollerar att numret ligger mellan 1 och antalet varor. Annars tas ingenting bort, och metoden svarar `false` ([3e66885](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/3e66885)).
+2. `Program.cs` använder svaret och skriver att numret inte finns när det blev `false` ([b40382c](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/b40382c)).
+
+**Varför `false` och inte ett undantag:** ett nummer som inte finns händer ofta när man skriver fel, och programmet behöver bara säga till. Därför räcker ett enkelt `false`.
+
+**Provat:** `9`, ett nummer för mycket, `0`, `-1` och `1` i en tom lista ger ett meddelande i stället för en krasch. Numren 1 och 2 tar bort rätt vara.
+
+Fel 5–6, designvalet och klassdiagrammet läggs till här efter hand.
