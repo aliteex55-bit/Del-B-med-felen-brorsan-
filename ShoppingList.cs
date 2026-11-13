@@ -140,7 +140,10 @@ class ShoppingList
                 continue;
             }
 
-            string[] parts = line.Split(';');
+            // Asked for: meet the requirement that the list looks the same after a restart. A name may itself
+            // contain ";" (for example "Kaffe;bryggt"). Split at the first ";" only, into at most 2 parts,
+            // so everything after it stays the name.
+            string[] parts = line.Split(';', 2);
 
             // Asked for: fix fel 1, layer 3. A broken line in the file must not crash the program.
             // It needs a ";" (two parts) and a whole-number price; otherwise tell the user and skip the line.
