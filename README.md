@@ -43,4 +43,18 @@ dotnet run
 
 **Provat:** programmet startar utan `items.txt`, och efter sparning och omstart finns varorna kvar. En låst fil och en fil utan läsrätt ger ett meddelande i stället för en krasch.
 
-Fel 3–6, designvalet och klassdiagrammet läggs till här efter hand.
+### Fel 3: bokstäver i stället för tal kraschade programmet
+
+**Vad hände:** menyvalet, priset och numret lästes med `int.Parse`. Bokstäver, en tom rad eller ett decimaltal gav `FormatException`, ett för stort tal gav `OverflowException`, och när inmatningen tog slut gav `int.Parse(null)` `ArgumentNullException`.
+
+**Varför:** `int.Parse` kastar ett undantag när texten inte är ett heltal, och inmatning från en användare kan alltid bli fel.
+
+**Så löstes det, i tre steg:**
+
+1. Menyvalet läses med `int.TryParse`. Är det inte en siffra skrivs "Skriv en siffra mellan 1 och 5." och menyn visas igen. Tar inmatningen slut avslutas programmet i stället för att fråga om och om igen ([b8b8f7b](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/b8b8f7b)).
+2. Priset läses med `int.TryParse`. Är det inte ett heltal säger programmet till och lägger inte till någon vara ([ac710d1](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/ac710d1)).
+3. Numret läses med `int.TryParse`. Är det inte ett heltal säger programmet till och tar inte bort något ([871d175](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/871d175)).
+
+**Provat:** bokstäver, en tom rad, decimaltal, för stora tal och slut på inmatningen ger ett meddelande i stället för en krasch, både i menyn, i priset och i numret. Ett nummer som är ett heltal men inte finns i listan, till exempel 9, hör till fel 4.
+
+Fel 4–6, designvalet och klassdiagrammet läggs till här efter hand.
