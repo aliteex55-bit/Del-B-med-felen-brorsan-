@@ -15,9 +15,18 @@ class ShoppingList
     }
 
     // Removes the item the user sees as number 1, 2, 3 ...
-    public void RemoveAt(int number)
+    // Asked for: fix fel 4, layer 1. A number that is not in the list must not crash the program.
+    // Returns false and removes nothing when the number is outside 1 .. the number of items,
+    // so the caller can tell the user.
+    public bool RemoveAt(int number)
     {
+        if (number < 1 || number > items.Count)
+        {
+            return false;
+        }
+
         items.RemoveAt(number - 1);
+        return true;
     }
 
     // Adds up the price of every item on the list.
