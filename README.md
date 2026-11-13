@@ -82,4 +82,17 @@ dotnet run
 
 **Provat:** lärarens `items.txt` ger 136 kr, en vara för 20 kr ger 20 kr, och en tom lista ger 0 kr. Summan stämmer också efter att en vara lagts till eller tagits bort.
 
-Fel 6, designvalet och klassdiagrammet läggs till här efter hand.
+### Fel 6: programmet sa att listan var sparad fast det misslyckades
+
+**Vad hände:** gick det inte att spara skrev programmet ändå "Listan är sparad.". Med en skrivskyddad `items.txt`, och med en fil som ett annat program höll öppen, fick man bekräftelsen, men den nya varan kom aldrig in i filen. Felet syns inte när man kör programmet som vanligt, bara när sparandet misslyckas.
+
+**Varför:** `catch`-blocket i `Save` var tomt och fångade alla sorters fel, så felet försvann utan ett ord. Raden med "Listan är sparad." låg efter `try` och `catch` och kördes därför alltid.
+
+**Så löstes det, i två steg:**
+
+1. Den tomma `catch` blev två specifika `catch`, en för `UnauthorizedAccessException` och en för `IOException`. Båda säger vad som gick fel och att listan inte sparades ([810efa5](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/810efa5)).
+2. "Listan är sparad." flyttades in i `try`, direkt efter `File.WriteAllText`. Kastar skrivningen ett undantag körs raden aldrig, så bekräftelsen syns bara när det gick ([f560715](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/f560715)).
+
+**Provat:** en vanlig fil ger "Listan är sparad.", och varan finns i filen. En skrivskyddad fil och en fil som ett annat program har öppen ger bara meddelandet att listan inte sparades, och filen är oförändrad.
+
+Designvalet och klassdiagrammet läggs till här efter hand.
