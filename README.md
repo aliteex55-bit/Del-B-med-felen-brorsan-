@@ -72,4 +72,14 @@ dotnet run
 
 **Provat:** `9`, ett nummer för mycket, `0`, `-1` och `1` i en tom lista ger ett meddelande i stället för en krasch. Numren 1 och 2 tar bort rätt vara.
 
-Fel 5–6, designvalet och klassdiagrammet läggs till här efter hand.
+### Fel 5: totalsumman hoppade över första varan
+
+**Vad hände:** totalsumman blev för låg. Med lärarens tre varor, 15 + 32 + 89 kr, visade programmet 121 kr i stället för 136 kr. Med en enda vara blev summan 0 kr. Programmet kraschade inte, så felet märktes bara om man räknade själv.
+
+**Varför:** en lista räknar platser från 0, så första varan ligger på `items[0]`. Loopen i `Total` började på `i = 1`, så `items[0]` räknades aldrig med.
+
+**Så löstes det:** loopen börjar på `i = 0` i stället för `i = 1` ([031bc55](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/031bc55)).
+
+**Provat:** lärarens `items.txt` ger 136 kr, en vara för 20 kr ger 20 kr, och en tom lista ger 0 kr. Summan stämmer också efter att en vara lagts till eller tagits bort.
+
+Fel 6, designvalet och klassdiagrammet läggs till här efter hand.
