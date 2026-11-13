@@ -86,6 +86,13 @@ class ShoppingList
 
         foreach (string line in lines)
         {
+            // Asked for: fix the crash at start, layer 1. The file ends with a line break,
+            // so the last "line" is empty and has no parts[1]. An empty line holds no item, so skip it.
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
             string[] parts = line.Split(';');
             items.Add(new Item(parts[1], int.Parse(parts[0])));
         }
