@@ -81,13 +81,14 @@ class ShoppingList
     // Reads the file back into the list.
     public void Load()
     {
-        string text = File.ReadAllText(path);
-        string[] lines = text.Split('\n');
+        // Asked for: fix fel 1, layer 2. ReadAllLines splits at every kind of line break and removes it,
+        // so no "\r" is left at the end of the names and searching for an item finds it.
+        string[] lines = File.ReadAllLines(path);
 
         foreach (string line in lines)
         {
-            // Asked for: fix the crash at start, layer 1. The file ends with a line break,
-            // so the last "line" is empty and has no parts[1]. An empty line holds no item, so skip it.
+            // Asked for: fix the crash at start, layer 1. An empty line holds no item and has no parts[1], so skip it.
+            // Since layer 2 the file's last line break no longer gives an empty line, but a blank line inside the file still does.
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;
