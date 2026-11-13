@@ -12,7 +12,7 @@ dotnet run
 
 ## Flödesschema
 
-[Klickbart flödesschema över startkoden](https://aliteex55-bit.github.io/Del-B-med-felen-brorsan-/flodesschema.html). Röda siffror visar var felen fanns, och en grön bock visar lösningen med koden efter lagningen.
+[Klickbart flödesschema över startkoden](https://aliteex55-bit.github.io/Del1-2brooor/flodesschema.html). Röda etiketter som 1-1 visar var felen fanns, fel och lager. I läget Lösning blir de gröna och visar koden efter lagningen.
 
 ## Felrapport
 
@@ -24,9 +24,9 @@ dotnet run
 
 **Så löstes det, i tre steg:**
 
-1. Tomma rader hoppas över med `string.IsNullOrWhiteSpace` och `continue` ([f322a88](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/f322a88)).
-2. Filen läses med `File.ReadAllLines`, som tar bort hela radbrytningen. Namnen blir rätt och sökningen fungerar ([0d9247f](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/0d9247f)).
-3. En rad utan `;`, eller med ett pris som inte är ett heltal, hoppas över med ett meddelande. Priset läses med `int.TryParse` i stället för `int.Parse` ([e3dd039](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/e3dd039)).
+1. Tomma rader hoppas över med `string.IsNullOrWhiteSpace` och `continue` ([f322a88](https://github.com/aliteex55-bit/Del1-2brooor/commit/f322a88)).
+2. Filen läses med `File.ReadAllLines`, som tar bort hela radbrytningen. Namnen blir rätt och sökningen fungerar ([0d9247f](https://github.com/aliteex55-bit/Del1-2brooor/commit/0d9247f)).
+3. En rad utan `;`, eller med ett pris som inte är ett heltal, hoppas över med ett meddelande. Priset läses med `int.TryParse` i stället för `int.Parse` ([e3dd039](https://github.com/aliteex55-bit/Del1-2brooor/commit/e3dd039)).
 
 **Provat:** programmet startar med lärarens `items.txt`, sökningen hittar varorna som syns i listan, listan ser likadan ut efter sparning och omstart, och tomma eller trasiga rader kraschar inte.
 
@@ -38,8 +38,8 @@ dotnet run
 
 **Så löstes det, i två steg:**
 
-1. Finns inte filen säger programmet till och börjar med en tom lista. Filen skapas första gången man sparar ([e81c5ac](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/e81c5ac)).
-2. Läsningen ligger i ett `try`, med en `catch` för `UnauthorizedAccessException` och en för `IOException`. Båda skriver ett svenskt meddelande, varnar för att en sparning skriver över filen och börjar med en tom lista ([d9a76a5](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/d9a76a5)).
+1. Finns inte filen säger programmet till och börjar med en tom lista. Filen skapas första gången man sparar ([e81c5ac](https://github.com/aliteex55-bit/Del1-2brooor/commit/e81c5ac)).
+2. Läsningen ligger i ett `try`, med en `catch` för `UnauthorizedAccessException` och en för `IOException`. Båda skriver ett svenskt meddelande, varnar för att en sparning skriver över filen och börjar med en tom lista ([d9a76a5](https://github.com/aliteex55-bit/Del1-2brooor/commit/d9a76a5)).
 
 **Provat:** programmet startar utan `items.txt`, och efter sparning och omstart finns varorna kvar. En låst fil och en fil utan läsrätt ger ett meddelande i stället för en krasch.
 
@@ -51,9 +51,9 @@ dotnet run
 
 **Så löstes det, i tre steg:**
 
-1. Menyvalet läses med `int.TryParse`. Är det inte en siffra skrivs "Skriv en siffra mellan 1 och 5." och menyn visas igen. Tar inmatningen slut avslutas programmet i stället för att fråga om och om igen ([b8b8f7b](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/b8b8f7b)).
-2. Priset läses med `int.TryParse`. Är det inte ett heltal säger programmet till och lägger inte till någon vara ([ac710d1](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/ac710d1)).
-3. Numret läses med `int.TryParse`. Är det inte ett heltal säger programmet till och tar inte bort något ([871d175](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/871d175)).
+1. Menyvalet läses med `int.TryParse`. Är det inte en siffra skrivs "Skriv en siffra mellan 1 och 5." och menyn visas igen. Tar inmatningen slut avslutas programmet i stället för att fråga om och om igen ([b8b8f7b](https://github.com/aliteex55-bit/Del1-2brooor/commit/b8b8f7b)).
+2. Priset läses med `int.TryParse`. Är det inte ett heltal säger programmet till och lägger inte till någon vara ([ac710d1](https://github.com/aliteex55-bit/Del1-2brooor/commit/ac710d1)).
+3. Numret läses med `int.TryParse`. Är det inte ett heltal säger programmet till och tar inte bort något ([871d175](https://github.com/aliteex55-bit/Del1-2brooor/commit/871d175)).
 
 **Provat:** bokstäver, en tom rad, decimaltal, för stora tal och slut på inmatningen ger ett meddelande i stället för en krasch, både i menyn, i priset och i numret. Ett nummer som är ett heltal men inte finns i listan, till exempel 9, hör till fel 4.
 
@@ -65,8 +65,8 @@ dotnet run
 
 **Så löstes det, i två steg:**
 
-1. `RemoveAt` i `ShoppingList` kontrollerar att numret ligger mellan 1 och antalet varor. Annars tas ingenting bort, och metoden svarar `false` ([3e66885](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/3e66885)).
-2. `Program.cs` använder svaret och skriver att numret inte finns när det blev `false` ([b40382c](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/b40382c)).
+1. `RemoveAt` i `ShoppingList` kontrollerar att numret ligger mellan 1 och antalet varor. Annars tas ingenting bort, och metoden svarar `false` ([3e66885](https://github.com/aliteex55-bit/Del1-2brooor/commit/3e66885)).
+2. `Program.cs` använder svaret och skriver att numret inte finns när det blev `false` ([b40382c](https://github.com/aliteex55-bit/Del1-2brooor/commit/b40382c)).
 
 **Varför `false` och inte ett undantag:** ett nummer som inte finns händer ofta när man skriver fel, och programmet behöver bara säga till. Därför räcker ett enkelt `false`.
 
@@ -78,7 +78,7 @@ dotnet run
 
 **Varför:** en lista räknar platser från 0, så första varan ligger på `items[0]`. Loopen i `Total` började på `i = 1`, så `items[0]` räknades aldrig med.
 
-**Så löstes det:** loopen börjar på `i = 0` i stället för `i = 1` ([031bc55](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/031bc55)).
+**Så löstes det:** loopen börjar på `i = 0` i stället för `i = 1` ([031bc55](https://github.com/aliteex55-bit/Del1-2brooor/commit/031bc55)).
 
 **Provat:** lärarens `items.txt` ger 136 kr, en vara för 20 kr ger 20 kr, och en tom lista ger 0 kr. Summan stämmer också efter att en vara lagts till eller tagits bort.
 
@@ -90,8 +90,8 @@ dotnet run
 
 **Så löstes det, i två steg:**
 
-1. Den tomma `catch` blev två specifika `catch`, en för `UnauthorizedAccessException` och en för `IOException`. Båda säger vad som gick fel och att listan inte sparades ([810efa5](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/810efa5)).
-2. "Listan är sparad." flyttades in i `try`, direkt efter `File.WriteAllText`. Kastar skrivningen ett undantag körs raden aldrig, så bekräftelsen syns bara när det gick ([f560715](https://github.com/aliteex55-bit/Del-B-med-felen-brorsan-/commit/f560715)).
+1. Den tomma `catch` blev två specifika `catch`, en för `UnauthorizedAccessException` och en för `IOException`. Båda säger vad som gick fel och att listan inte sparades ([810efa5](https://github.com/aliteex55-bit/Del1-2brooor/commit/810efa5)).
+2. "Listan är sparad." flyttades in i `try`, direkt efter `File.WriteAllText`. Kastar skrivningen ett undantag körs raden aldrig, så bekräftelsen syns bara när det gick ([f560715](https://github.com/aliteex55-bit/Del1-2brooor/commit/f560715)).
 
 **Provat:** en vanlig fil ger "Listan är sparad.", och varan finns i filen. En skrivskyddad fil och en fil som ett annat program har öppen ger bara meddelandet att listan inte sparades, och filen är oförändrad.
 
