@@ -67,7 +67,12 @@ while (true)
             continue;
         }
 
-        list.Add(item);
+        // Asked for: utbyggnad U2-2. Add answers false when the item would go over the budget,
+        // so tell the user instead of letting the item disappear without a word.
+        if (!list.Add(item))
+        {
+            Console.WriteLine($"{item.Name} för {item.Price} kr ryms inte i budgeten på {list.Budget} kr (det finns {list.Budget - list.Total()} kr kvar). Varan lades inte till.");
+        }
     }
     else if (choice == 2)
     {
