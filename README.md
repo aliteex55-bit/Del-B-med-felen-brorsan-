@@ -110,4 +110,28 @@ dotnet run
 
 **Provat:** ett tomt namn, ett namn med bara mellanslag och priserna -5 och -1 ger ett meddelande, och ingen vara läggs till. 0 kr är tillåtet. I filen hoppas `15;` och `-5;Ost` över med meddelanden, och resten av listan läses in.
 
-U2 med budgettaket, designvalet och klassdiagrammet läggs till här efter hand.
+### U2: Listan har ett budgettak
+
+**Vad krävdes:** `ShoppingList` ska ha ett tak för hur dyr hela listan får bli, och en vara som skulle spränga taket ska inte läggas till. Hur `Add` säger nej är ett eget designval som ska motiveras. Användaren ska få ett begripligt meddelande, och programmet ska fortsätta köra.
+
+**Före:** listan hade inget tak. En vara för 5000 kr lades till i lärarens lista på 136 kr som vanligt, och två varor för `2147483647` kr, det största talet en `int` rymmer, gav `Totalt: 134 kr`, eftersom summan slog runt.
+
+**Så gjordes det, i tre steg:**
+
+1. `ShoppingList` får taket `Budget` i konstruktorn, och `Program.cs` skapar listan med 1000 kr. `Add` svarar `false` och lägger inte till något när summan skulle gå över taket. I kontrollen görs `Total()` om till `long` innan priset läggs till, så att summan inte kan slå runt till ett negativt tal och smita under taket ([715f99e](https://github.com/aliteex55-bit/Del1-2brooor/commit/715f99e)).
+2. `Program.cs` använder svaret från `Add`. Är det `false` skrivs vilken vara som inte ryms, taket och hur mycket som finns kvar ([e2b0021](https://github.com/aliteex55-bit/Del1-2brooor/commit/e2b0021)).
+3. `Load` lägger också till varorna från filen via `Add`. En rad som inte ryms hoppas över med ett meddelande, så inte heller filen kan ge en lista över taket ([f106181](https://github.com/aliteex55-bit/Del1-2brooor/commit/f106181)).
+
+#### Designval: `Add` säger nej genom att returnera `false`, inte genom att kasta ett undantag
+
+Att en vara inte ryms i budgeten är inget fel i programmet. Det händer i vanlig användning, när någon försöker lägga till något som är för dyrt. `Add` kan bara säga nej av en enda anledning, taket, så den som anropar behöver bara veta ja eller nej, och det räcker med en `if`. Siffrorna i meddelandet hämtar `Program.cs` från `list.Budget` och `list.Total()`. Med ett undantag skulle både `Program.cs` och `Load` behöva `try` och `catch` runt `Add`, och en glömd `catch` skulle få programmet att krascha. Det är samma sätt som `RemoveAt` i fel 4 och som bankexemplet i uppgiften, där ett uttag returnerar `false` när saldot inte räcker.
+
+`Item` kastar däremot undantag (U1). Ett `Item` med tomt namn eller negativt pris får aldrig finnas, och en konstruktor kan inte svara `false`. En vara som inte ryms är i stället ett giltigt objekt som just den här listan säger nej till.
+
+Nackdelen med `false` är att man kan glömma att titta på svaret. Då försvinner varan utan ett ord, vilket syntes efter steg 1. Därför läser både `Program.cs` och `Load` svaret.
+
+**Vad `Program.cs` gör med svaret:** den kollar svaret med `if (!list.Add(item))`. Är det `false` skrivs till exempel "Tv för 5000 kr ryms inte i budgeten på 1000 kr (det finns 864 kr kvar). Varan lades inte till.", och menyn visas igen. Är det `true` behövs inget mer, och varan syns i listan när menyn visas igen. `Program.cs` hanterar alltså två saker på två sätt: `try` och `catch` runt `new Item(...)` för det ogiltiga objektet, och `if` runt `list.Add(item)` för taket. `Load` gör samma sak med en rad i filen: "En rad i items.txt ryms inte i budgeten på 1000 kr och hoppades över: 2000;Tv".
+
+**Provat:** 864 kr till lärarens 136 kr ger exakt 1000 kr. 865 kr, 5000 kr och `2147483647` kr läggs inte till, och programmet säger hur mycket som finns kvar. 0 kr går att lägga till även när listan är på 1000 kr. En `items.txt` med `2000;Tv` hoppas över med ett meddelande, och med 900, 200 och 100 kr läses 900 kr och 100 kr in. Tomt namn, negativt pris och bokstäver i priset ger samma meddelanden som förut.
+
+**Bra att veta:** raderna i filen läses uppifrån och ner, så ordningen avgör vilka varor som kommer med. En rad som hoppats över försvinner ur filen nästa gång man sparar, precis som en trasig rad.
