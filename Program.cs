@@ -44,7 +44,21 @@ while (true)
             continue;
         }
 
-        list.Add(new Item(name, price));
+        // Asked for: utbyggnad U1-1. Item refuses an empty name by throwing ArgumentException.
+        // Catch exactly that, tell the user and go back to the menu without adding anything.
+        Item item;
+
+        try
+        {
+            item = new Item(name, price);
+        }
+        catch (ArgumentException)
+        {
+            Console.WriteLine("Namnet får inte vara tomt. Varan lades inte till.");
+            continue;
+        }
+
+        list.Add(item);
     }
     else if (choice == 2)
     {

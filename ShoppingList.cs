@@ -153,7 +153,16 @@ class ShoppingList
                 continue;
             }
 
-            items.Add(new Item(parts[1], price));
+            // Asked for: utbyggnad U1-1. A line with an empty name, like "15;", is refused by Item.
+            // Skip that line with a message instead of crashing at start.
+            try
+            {
+                items.Add(new Item(parts[1], price));
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine($"En rad i {path} har ett tomt namn och hoppades över: {line}");
+            }
         }
     }
 }
