@@ -82,8 +82,15 @@ class ShoppingList
         {
             File.WriteAllText(path, string.Join("\r\n", lines) + "\r\n");
         }
-        catch
+        // Asked for: fix fel 6, layer 1. The catch was empty and caught everything, so a failed save
+        // was hidden. Catch only the errors writing a file can give, and tell the user what happened.
+        catch (UnauthorizedAccessException)
         {
+            Console.WriteLine($"Programmet får inte skriva till {path}. Listan sparades inte.");
+        }
+        catch (IOException)
+        {
+            Console.WriteLine($"Filen {path} gick inte att skriva till, till exempel för att ett annat program använder den. Listan sparades inte.");
         }
 
         Console.WriteLine("Listan är sparad.");
