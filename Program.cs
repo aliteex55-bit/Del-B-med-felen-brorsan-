@@ -1,4 +1,5 @@
-ShoppingList list = new ShoppingList("items.txt");
+// Asked for: utbyggnad U2-1. The list gets a budget of 1000 kr, the amount the user chose.
+ShoppingList list = new ShoppingList("items.txt", 1000);
 list.Load();
 
 while (true)

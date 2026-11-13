@@ -4,14 +4,28 @@ class ShoppingList
     private List<Item> items = new List<Item>();
     private string path;
 
-    public ShoppingList(string path)
+    // Asked for: utbyggnad U2-1. The list has a budget: the most the whole list may cost, in whole kronor.
+    public int Budget { get; }
+
+    public ShoppingList(string path, int budget)
     {
         this.path = path;
+        Budget = budget;
     }
 
-    public void Add(Item item)
+    // Asked for: utbyggnad U2-1. An item that would make the total go over the budget is not added.
+    // The design choice is to say no by returning false (like RemoveAt), not by throwing an exception:
+    // a full budget is an ordinary situation the caller checks with an if.
+    // The sum is computed as long, so a huge price cannot overflow int and slip under the budget.
+    public bool Add(Item item)
     {
+        if ((long)Total() + item.Price > Budget)
+        {
+            return false;
+        }
+
         items.Add(item);
+        return true;
     }
 
     // Removes the item the user sees as number 1, 2, 3 ...
