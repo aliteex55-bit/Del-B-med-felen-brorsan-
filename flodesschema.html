@@ -95,7 +95,11 @@ body.view-bug .layer .ls, body.view-fix .layer .lp { display: none; }
 .viewbtn[aria-pressed="true"] { background: var(--accent); color: var(--bg); font-weight: 600; }
 .viewbtn[data-view="fix"][aria-pressed="true"] { background: var(--ok); }
 body.view-bug .fixref, body.view-bug .okbadge, body.view-bug .nofix { display: none; }
-body.view-fix #panel.has-fix .ref.orig, body.view-fix #panel.has-fix .bug { display: none; }
+body.view-fix .has-fix .ref.orig, body.view-fix .has-fix .bug { display: none; }
+.backbtn { margin: 0 0 12px; }
+.showall { margin: 4px 0 6px; }
+.allbox { border-top: 2px solid var(--line); margin-top: 22px; padding-top: 14px; }
+.allhead { margin-bottom: 0; }
 body.view-fix .node.is-fixed .badge { display: none; }
 body.view-fix .node.is-fixed:not(.sel) > rect, body.view-fix .node.is-fixed:not(.sel) > polygon { stroke: var(--ok); stroke-width: 2; fill: var(--ok-soft); }
 body.view-fix .fixref .fix { margin-top: 10px; }
@@ -561,7 +565,7 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
     var h = '<h2>Felrapport</h2><p class="what">Samma text som i README.md, commit ' + esc(DATA.readme) + '.</p>';
     DATA.reports.forEach(function (r) {
       h += '<div class="report" id="rapport-' + r.n + '"><h3>Fel ' + r.n + ': ' + esc(r.titel) + '</h3>' + r.html +
-        '<button type="button" class="goto" data-id="' + r.id + '">Visa fel ' + r.n + ' i schemat</button></div>';
+        '<button type="button" class="goto" data-id="' + r.id + '" data-back="rapport">Visa fel ' + r.n + ' i schemat</button></div>';
     });
     if (DATA.reportsLeft) h += '<p class="what">' + esc(DATA.reportsLeft) + '</p>';
     panel.innerHTML = h;
@@ -572,7 +576,26 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
   reportBtn.addEventListener('click', showReports);
   panel.addEventListener('click', function (e) {
     var g = e.target.closest('.goto');
-    if (g) render(DATA.order.indexOf(g.getAttribute('data-id')));
+    if (!g) return;
+    render(DATA.order.indexOf(g.getAttribute('data-id')));
+    // Asked for: a way back after "Visa rutan", to inspect the other boxes of the same bug.
+    if (g.getAttribute('data-back')) addBack(g.getAttribute('data-back'));
+  });
+
+  // The back button at the top of the panel: back to a bug's (or extension's) overview,
+  // or back to the bug reports.
+  function backText(key) {
+    if (key === 'rapport') return '← Tillbaka till felrapporten';
+    return '← Tillbaka till ' + (key.charAt(0) === 'U' ? 'utbyggnad ' : 'fel ') + key;
+  }
+  function addBack(key) {
+    panel.insertAdjacentHTML('afterbegin', '<button type="button" class="backbtn" data-back="' + key + '">' + backText(key) + '</button>');
+  }
+  panel.addEventListener('click', function (e) {
+    var bk = e.target.closest('.backbtn');
+    if (!bk) return;
+    var key = bk.getAttribute('data-back');
+    if (key === 'rapport') showReports(); else showBug(key);
   });
 
   // Asked for: a way to see the full code. Problem shows the start code with the bug lines
@@ -682,11 +705,15 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
         ' är markerade i schemat. Problem visar ' + (ext ? 'hur det var innan' : 'vad som var fel') + ' i varje lager, Lösning vad som ändrades.'
       : 'Inte påbörjad än. Lagren visas här när de är gjorda. Den markerade rutan är där ändringen kommer att hamna.';
     h += '</p>';
+    // Asked for: open all boxes of the bug at once, as an alternative to one at a time.
+    if (b.boxes.length > 1) {
+      h += '<button type="button" class="showall" data-key="' + key + '">Visa alla ' + b.boxes.length + ' rutor</button>';
+    }
     b.layers.forEach(function (L) {
       h += '<div class="layer"><span class="lab">' + L.label + '</span><div class="txt"><span class="lp">' + esc(L.problem) +
         '</span><span class="ls">' + esc(L.solution) + '</span><div class="lc">commit ' + L.commit + '</div></div>';
       h += L.box
-        ? '<button type="button" class="goto" data-id="' + L.box + '">Visa rutan</button>'
+        ? '<button type="button" class="goto" data-id="' + L.box + '" data-back="' + key + '">Visa rutan</button>'
         : '<button type="button" class="gorep" data-n="' + n + '">Visa rapporten</button>';
       h += '</div>';
     });
@@ -703,12 +730,41 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
     if (box) box.scrollIntoView({ block: 'start' });
   });
 
+  // Asked for: open all boxes of a bug at the same time. Each box is drawn exactly as
+  // when it is clicked (render), and the panels are put after each other.
+  function showAll(key) {
+    var b = DATA.bugs.concat(DATA.exts).filter(function (x) { return String(x.key) === key; })[0];
+    if (!b) return;
+    var html = '';
+    b.boxes.forEach(function (id) {
+      render(DATA.order.indexOf(id));
+      var fixes = DATA.nodes[id].refs.some(function (r) { return !!r.fixbox; });
+      html += '<section class="allbox' + (fixes ? ' has-fix' : '') + '">' + panel.innerHTML + '</section>';
+    });
+    current = -1;
+    document.querySelectorAll('.node.sel').forEach(function (e) { e.classList.remove('sel'); });
+    document.querySelectorAll('.bugbtn').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-key') === key); });
+    document.getElementById('pos').textContent = '';
+    setMulti(b.boxes);
+    var ext = key.charAt(0) === 'U';
+    panel.innerHTML = '<button type="button" class="backbtn" data-back="' + key + '">' + backText(key) + '</button>' +
+      '<h2 class="allhead">Alla rutor för ' + (ext ? 'utbyggnad ' : 'fel ') + key + ': ' + esc(b.kort) + '</h2>' + html;
+    panel.classList.remove('has-fix');
+    panel.scrollTop = 0;
+    try { history.replaceState(null, '', location.pathname + location.search + '#alla-' + key); } catch (e) {}
+  }
+  panel.addEventListener('click', function (e) {
+    var s = e.target.closest('.showall');
+    if (s) showAll(s.getAttribute('data-key'));
+  });
+
   var start = DATA.order.indexOf(location.hash.slice(1));
   if (start >= 0) render(start);
   else if (location.hash === '#felrapport') showReports();
   else if (location.hash.indexOf('#kod-') === 0) showCode(decodeURIComponent(location.hash.slice(5)));
   else if (/^#fel-[1-6]$/.test(location.hash)) showBug(location.hash.slice(5));
   else if (/^#utbyggnad-U[0-9]$/.test(location.hash)) showBug(location.hash.slice(11));
+  else if (/^#alla-(U?[0-9])$/.test(location.hash)) showAll(location.hash.slice(6));
 })();
 </script>
 </body>
