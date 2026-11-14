@@ -301,13 +301,14 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
   #runpane { max-height: 90vh; }
   #chart { border-right: 0; border-bottom: 1px solid var(--line); }
 }
-/* Asked for: the Stark-style HUD look on the Dance view, keeping the page's own layout (flow chart,
-   class diagram, code and the Dance lyrics), and keeping the colour code of the dark theme: red =
-   bug, green = fixed layer, purple = highlighted (and beat 1), blue = chosen / extension, yellow =
-   focus line in the code. Cyan (--hud) is only the HUD's frame: grid, panel edges, sweeps and the
-   reactor rings, which mean nothing. Only applies while Dance is chosen, so choosing Dance "suits
-   up" the page and Problem/Lösning keep their look. The generator puts this file into <style>. */
-body.view-dance {
+/* Asked for: the Stark-style HUD look, first on Dance and then on Problem and Lösning too, keeping
+   the page's own layout (flow chart, class diagram, code, explanation, run view and lyrics) and the
+   colour code of the dark theme in each view: red = bug, green = fixed layer, purple = highlighted
+   (and beat 1), blue = chosen / extension, yellow = focus line in the code. Cyan (--hud) is only the
+   HUD's frame: grid, panel edges, sweeps and the reactor rings, which mean nothing. It applies to the
+   dark theme (the page opens dark); the Ljust/mörkt button still gives the old light page.
+   The generator puts this file into <style>. */
+:root[data-theme="dark"] body {
   --hud: #62f3ff; --hud-dim: rgba(98, 243, 255, .32); --hud-faint: rgba(98, 243, 255, .07);
   --bg: #02070e; --panel: rgba(6, 34, 52, .55); --text: #d8f6ff; --muted: rgba(160, 220, 245, .62); --line: rgba(98, 243, 255, .2);
   --code-bg: rgba(1, 10, 18, .55);
@@ -315,102 +316,100 @@ body.view-dance {
   background: radial-gradient(ellipse 70% 60% at 50% 35%, #072a42 0%, #03111e 45%, #02070e 80%);
   font-family: "Bahnschrift", "Segoe UI", system-ui, sans-serif; letter-spacing: .02em;
 }
-body.view-dance::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+:root[data-theme="dark"] body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image: linear-gradient(rgba(98, 243, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(98, 243, 255, .045) 1px, transparent 1px);
   background-size: 36px 36px; }
-body.view-dance::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 40;
+:root[data-theme="dark"] body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 40;
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .16) 0 1px, transparent 1px 3px); }
-body.view-dance header, body.view-dance main { position: relative; z-index: 1; }
+:root[data-theme="dark"] body header, :root[data-theme="dark"] body main { position: relative; z-index: 1; }
 
 /* Header: transparent, a glowing line under it, angled HUD buttons */
-body.view-dance header { background: rgba(2, 12, 22, .55); border-bottom: 1px solid var(--hud-dim); box-shadow: 0 1px 18px rgba(98, 243, 255, .18); }
-body.view-dance header h1 { text-transform: uppercase; letter-spacing: .22em; font-weight: 700; font-size: 16px; color: #eaffff;
+:root[data-theme="dark"] body header { background: rgba(2, 12, 22, .55); border-bottom: 1px solid var(--hud-dim); box-shadow: 0 1px 18px rgba(98, 243, 255, .18); }
+:root[data-theme="dark"] body header h1 { text-transform: uppercase; letter-spacing: .22em; font-weight: 700; font-size: 16px; color: #eaffff;
   text-shadow: -1.5px 0 rgba(255, 60, 90, .6), 1.5px 0 rgba(60, 220, 255, .85), 0 0 16px rgba(98, 243, 255, .55); }
-body.view-dance header .hint { color: var(--muted); font-size: 12px; }
-body.view-dance button, body.view-dance select { background: var(--hud-faint); border: 1px solid var(--hud-dim); color: var(--hud);
+:root[data-theme="dark"] body header .hint { color: var(--muted); font-size: 12px; }
+/* :where() keeps these two rules light, so every button's own state and colour (on, pressed, off,
+   solved, red Fel, blue U) still wins over them; the HUD only gives shape and the base colour */
+:where(:root[data-theme="dark"]) button, :where(:root[data-theme="dark"]) select { background: var(--hud-faint); border: 1px solid var(--hud-dim); color: var(--hud);
   border-radius: 0; text-transform: uppercase; letter-spacing: .14em; font-size: 12px; font-weight: 600;
   clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
-body.view-dance button:hover { background: rgba(98, 243, 255, .16); }
-body.view-dance .viewbtn[data-view="dance"][aria-pressed="true"] { background: var(--mark); color: var(--bg); box-shadow: 0 0 26px var(--mark); }
-/* The Fel and U buttons keep their own colours and square shape (their purple ring must show) */
-body.view-dance .bugbtn { clip-path: none; background: transparent; border-color: var(--err); color: var(--err); }
-body.view-dance .bugbtn.extbtn { border-color: var(--accent); color: var(--accent); }
-body.view-dance .bugbtn.on { background: var(--err); color: var(--bg); }
-body.view-dance .bugbtn.extbtn.on { background: var(--accent); color: var(--bg); }
-body.view-dance .extlabel { color: var(--muted); letter-spacing: .25em; text-transform: uppercase; font-size: 11px; }
-body.view-dance .viewtoggle[aria-pressed="true"] { background: rgba(98, 243, 255, .16); border-color: var(--hud); }
+:where(:root[data-theme="dark"]) button:hover { background: rgba(98, 243, 255, .16); }
+:root[data-theme="dark"] body .viewbtn[data-view="bug"][aria-pressed="true"] { background: var(--accent); color: var(--bg); box-shadow: 0 0 22px var(--accent); }
+:root[data-theme="dark"] body .viewbtn[data-view="fix"][aria-pressed="true"] { background: var(--ok); color: var(--bg); box-shadow: 0 0 22px var(--ok); }
+:root[data-theme="dark"] body .viewbtn[data-view="dance"][aria-pressed="true"] { background: var(--mark); color: var(--bg); box-shadow: 0 0 26px var(--mark); }
+/* The Fel and U buttons keep their square shape (their purple ring must show) */
+:root[data-theme="dark"] body .bugbtn { clip-path: none; }
+:root[data-theme="dark"] body .extlabel { color: var(--muted); letter-spacing: .25em; text-transform: uppercase; font-size: 11px; }
+:root[data-theme="dark"] body .viewtoggle[aria-pressed="true"] { background: rgba(98, 243, 255, .16); border-color: var(--hud); }
 
 /* Views: floating holo panels with cut corners, corner brackets and a sweeping top line */
-body.view-dance #panes { gap: 0; padding: 8px 6px; }
+:root[data-theme="dark"] body #panes { gap: 0; padding: 8px 6px; }
 /* overflow: hidden keeps the sweeping line inside its view, so the page never scrolls sideways */
-body.view-dance .pane { position: relative; overflow: hidden; margin: 0 3px; background: linear-gradient(160deg, rgba(14, 90, 125, .22), rgba(3, 22, 36, .35) 60%, rgba(98, 243, 255, .04));
+:root[data-theme="dark"] body .pane { position: relative; overflow: hidden; margin: 0 3px; background: linear-gradient(160deg, rgba(14, 90, 125, .22), rgba(3, 22, 36, .35) 60%, rgba(98, 243, 255, .04));
   border: 1px solid rgba(98, 243, 255, .3); border-right: 1px solid rgba(98, 243, 255, .3);
   clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
   box-shadow: inset 0 0 50px rgba(98, 243, 255, .06); }
-body.view-dance .pane::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; z-index: 2;
+:root[data-theme="dark"] body .pane::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; z-index: 2;
   background: linear-gradient(90deg, transparent, var(--hud), transparent); animation: hudsweep 2.562s linear infinite; }
-body.view-dance .pane::after { content: ""; position: absolute; right: 5px; bottom: 5px; width: 14px; height: 14px; z-index: 2;
+:root[data-theme="dark"] body .pane::after { content: ""; position: absolute; right: 5px; bottom: 5px; width: 14px; height: 14px; z-index: 2;
   border: solid var(--hud); border-width: 0 2px 2px 0; filter: drop-shadow(0 0 4px var(--hud)); }
 @keyframes hudsweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-body.view-dance .splitter { background: transparent; }
-body.view-dance .panebar { background: rgba(2, 14, 24, .5); border-bottom: 1px solid rgba(98, 243, 255, .22); }
-body.view-dance .panetitle { color: var(--hud); text-transform: uppercase; letter-spacing: .3em; font-size: 11px; }
-body.view-dance .panetitle::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%;
+:root[data-theme="dark"] body .splitter { background: transparent; }
+:root[data-theme="dark"] body .panebar { background: rgba(2, 14, 24, .5); border-bottom: 1px solid rgba(98, 243, 255, .22); }
+:root[data-theme="dark"] body .panetitle { color: var(--hud); text-transform: uppercase; letter-spacing: .3em; font-size: 11px; }
+:root[data-theme="dark"] body .panetitle::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%;
   background: var(--hud); box-shadow: 0 0 10px var(--hud); animation: hudblink .6405s steps(2) infinite; }
 @keyframes hudblink { 50% { opacity: .2; } }
-body.view-dance .panectl button { clip-path: none; border-color: transparent; background: transparent; color: var(--muted); }
-body.view-dance .zoomval { color: var(--muted); }
+:root[data-theme="dark"] body .panectl button { clip-path: none; border-color: transparent; background: transparent; color: var(--muted); }
+:root[data-theme="dark"] body .zoomval { color: var(--muted); }
 
 /* Flow chart and class diagram: dark glass boxes and cyan wires; the highlighted box keeps the
    theme's purple, now glowing */
-body.view-dance .node rect, body.view-dance .node polygon { fill: rgba(4, 26, 40, .85); stroke: rgba(98, 243, 255, .42); }
-body.view-dance .node > text { fill: rgba(200, 240, 255, .85); }
-body.view-dance .node.multi > rect, body.view-dance .node.multi > polygon { fill: var(--mark-soft) !important; stroke: var(--mark) !important; }
-body.view-dance .node.multi > text { fill: #ffffff; font-weight: 700; }
-body.view-dance .node.multi { filter: drop-shadow(0 0 8px var(--mark)) drop-shadow(0 0 20px rgba(199, 155, 234, .45)); }
-body.view-dance .node.sel { filter: drop-shadow(0 0 8px var(--accent)); }
-body.view-dance #chart line, body.view-dance #chart path { stroke: rgba(98, 243, 255, .38); }
-body.view-dance .sec { fill: var(--muted); letter-spacing: .2em; }
-body.view-dance .cdc rect { fill: rgba(4, 26, 40, .8); stroke: rgba(98, 243, 255, .45); }
-body.view-dance .cdm.sel { filter: drop-shadow(0 0 8px var(--accent)); }
-body.view-dance .cdm.rel { filter: drop-shadow(0 0 6px var(--mark)); }
+:root[data-theme="dark"] body .node rect, :root[data-theme="dark"] body .node polygon { fill: rgba(4, 26, 40, .85); stroke: rgba(98, 243, 255, .42); }
+:root[data-theme="dark"] body .node > text { fill: rgba(200, 240, 255, .85); }
+:root[data-theme="dark"] body .node.multi > rect, :root[data-theme="dark"] body .node.multi > polygon { fill: var(--mark-soft) !important; stroke: var(--mark) !important; }
+:root[data-theme="dark"] body .node.multi > text { fill: #ffffff; font-weight: 700; }
+:root[data-theme="dark"] body .node.multi { filter: drop-shadow(0 0 8px var(--mark)) drop-shadow(0 0 20px rgba(199, 155, 234, .45)); }
+:root[data-theme="dark"] body .node.sel { filter: drop-shadow(0 0 8px var(--accent)); }
+:root[data-theme="dark"] body #chart line, :root[data-theme="dark"] body #chart path { stroke: rgba(98, 243, 255, .38); }
+:root[data-theme="dark"] body .sec { fill: var(--muted); letter-spacing: .2em; }
+:root[data-theme="dark"] body .cdc rect { fill: rgba(4, 26, 40, .8); stroke: rgba(98, 243, 255, .45); }
+:root[data-theme="dark"] body .cdm.sel { filter: drop-shadow(0 0 8px var(--accent)); }
+:root[data-theme="dark"] body .cdm.rel { filter: drop-shadow(0 0 6px var(--mark)); }
 /* The layer labels (1-1, 2-1, U2-1 ...) keep their colours (green fixed, red bug, blue extension)
-   with dark text, a dark rim and a little glow, so they stay readable on the glass */
-body.view-dance .node .okbadge rect, body.view-dance .node .badge rect, body.view-dance .node .extbadge rect { stroke: #02070e !important; stroke-width: 2 !important; }
-body.view-dance .node .okbadge { filter: drop-shadow(0 0 3px var(--ok)); }
-body.view-dance .node .badge { filter: drop-shadow(0 0 3px var(--err)); }
-body.view-dance .node .extbadge { filter: drop-shadow(0 0 3px var(--accent)); }
+   with dark text and a dark rim, so they stay readable on the glass */
+:root[data-theme="dark"] body .node .okbadge rect, :root[data-theme="dark"] body .node .badge rect, :root[data-theme="dark"] body .node .extbadge rect { stroke: #02070e !important; stroke-width: 2 !important; }
 
-/* Code: the line being sung keeps the theme's yellow focus, now glowing, with a LOCKED tag */
-body.view-dance .code { background: var(--code-bg); border-color: rgba(98, 243, 255, .2); }
-body.view-dance .codesel, body.view-dance .what { color: var(--muted); }
-body.view-dance .code tr.blk td { color: #fff8e0; text-shadow: 0 0 8px rgba(224, 176, 64, .55); }
-body.view-dance .code tr.blk td.n { color: var(--warn); text-shadow: 0 0 8px var(--warn); }
-body.view-dance .code tr.blk { outline: 1px solid rgba(224, 176, 64, .6); outline-offset: -1px; }
-body.view-dance .code tr.blk td:last-child { position: relative; }
-body.view-dance .code tr.blk td:last-child::after { content: "LOCKED"; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+/* Code: the focus line keeps the theme's yellow, now glowing, with a LOCKED tag */
+:root[data-theme="dark"] body .code { background: var(--code-bg); border-color: rgba(98, 243, 255, .2); }
+:root[data-theme="dark"] body .codesel, :root[data-theme="dark"] body .what { color: var(--muted); }
+:root[data-theme="dark"] body .code tr.blk td { color: #fff8e0; text-shadow: 0 0 8px rgba(224, 176, 64, .55); }
+:root[data-theme="dark"] body .code tr.blk td.n { color: var(--warn); text-shadow: 0 0 8px var(--warn); }
+:root[data-theme="dark"] body .code tr.blk { outline: 1px solid rgba(224, 176, 64, .6); outline-offset: -1px; }
+:root[data-theme="dark"] body .code tr.blk td:last-child { position: relative; }
+:root[data-theme="dark"] body .code tr.blk td:last-child::after { content: "LOCKED"; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
   font: 700 9px "Bahnschrift", "Segoe UI", sans-serif; letter-spacing: .25em; color: var(--warn); text-shadow: 0 0 8px var(--warn); }
-body.view-dance .codetab { clip-path: none; }
+:root[data-theme="dark"] body .codetab { clip-path: none; }
 
 /* Dance: the lyrics as a projection; the sung line keeps the theme's blue, sung words blue, the word
    being sung green */
-body.view-dance .runnote { color: var(--muted); text-transform: uppercase; letter-spacing: .16em; font-size: 11px; }
-body.view-dance .lysec { color: var(--hud); letter-spacing: .4em; opacity: .75; }
-body.view-dance .lyline { color: rgba(170, 220, 245, .42); border-radius: 0; }
-body.view-dance .lyline.now { color: #f2feff; background: linear-gradient(90deg, var(--accent-soft), transparent);
+:root[data-theme="dark"] body .runnote { color: var(--muted); text-transform: uppercase; letter-spacing: .16em; font-size: 11px; }
+:root[data-theme="dark"] body .lysec { color: var(--hud); letter-spacing: .4em; opacity: .75; }
+:root[data-theme="dark"] body .lyline { color: rgba(170, 220, 245, .42); border-radius: 0; }
+:root[data-theme="dark"] body .lyline.now { color: #f2feff; background: linear-gradient(90deg, var(--accent-soft), transparent);
   border-left: 3px solid var(--accent); font-size: 19px; line-height: 1.35; padding: 8px 10px;
   text-shadow: 0 0 10px rgba(91, 140, 255, .65), 0 0 26px rgba(91, 140, 255, .35); }
-body.view-dance .lyline.now .w.done { color: var(--accent); }
-body.view-dance .lyline.now .w.on { color: var(--ok); border-bottom: 2px solid var(--ok); }
-body.view-dance .lyline code { background: rgba(98, 243, 255, .08); border-color: var(--hud-dim); color: var(--text); }
-body.view-dance .lyline.now code { background: var(--accent); color: var(--bg); text-shadow: none; box-shadow: 0 0 14px var(--accent); }
-body.view-dance .lyline.now code .w, body.view-dance .lyline.now code .w.done, body.view-dance .lyline.now code .w.on { color: var(--bg); border-bottom: 0; }
+:root[data-theme="dark"] body .lyline.now .w.done { color: var(--accent); }
+:root[data-theme="dark"] body .lyline.now .w.on { color: var(--ok); border-bottom: 2px solid var(--ok); }
+:root[data-theme="dark"] body .lyline code { background: rgba(98, 243, 255, .08); border-color: var(--hud-dim); color: var(--text); }
+:root[data-theme="dark"] body .lyline.now code { background: var(--accent); color: var(--bg); text-shadow: none; box-shadow: 0 0 14px var(--accent); }
+:root[data-theme="dark"] body .lyline.now code .w, :root[data-theme="dark"] body .lyline.now code .w.done, :root[data-theme="dark"] body .lyline.now code .w.on { color: var(--bg); border-bottom: 0; }
 /* The four beat marks as diamonds: green on each beat, purple on beat 1, as before */
-body.view-dance .beatbar { gap: 12px; height: 26px; }
-body.view-dance .beatbar span { width: 13px; height: 13px; border-radius: 0; transform: rotate(45deg); background: transparent; border: 1px solid rgba(98, 243, 255, .45); }
-body.view-dance .beatbar span.on { background: var(--ok); border-color: var(--ok); box-shadow: 0 0 14px var(--ok); transform: rotate(45deg) scale(1.3); }
-body.view-dance .beatbar span.on:first-child { background: var(--mark); border-color: var(--mark); box-shadow: 0 0 18px var(--mark); transform: rotate(45deg) scale(1.55); }
-body.view-dance #danceaudio { filter: drop-shadow(0 0 8px rgba(98, 243, 255, .35)); margin-top: 8px; }
+:root[data-theme="dark"] body .beatbar { gap: 12px; height: 26px; }
+:root[data-theme="dark"] body .beatbar span { width: 13px; height: 13px; border-radius: 0; transform: rotate(45deg); background: transparent; border: 1px solid rgba(98, 243, 255, .45); }
+:root[data-theme="dark"] body .beatbar span.on { background: var(--ok); border-color: var(--ok); box-shadow: 0 0 14px var(--ok); transform: rotate(45deg) scale(1.3); }
+:root[data-theme="dark"] body .beatbar span.on:first-child { background: var(--mark); border-color: var(--mark); box-shadow: 0 0 18px var(--mark); transform: rotate(45deg) scale(1.55); }
+:root[data-theme="dark"] body #danceaudio { filter: drop-shadow(0 0 8px rgba(98, 243, 255, .35)); margin-top: 8px; }
 
 /* Arc reactor beside the player: rings that spin, a core that flashes on every beat */
 .hudreactor { position: relative; width: 112px; height: 112px; flex: none; }
@@ -438,10 +437,10 @@ body.view-dance #danceaudio { filter: drop-shadow(0 0 8px rgba(98, 243, 255, .35
 .hudread b { font: 700 20px "Cascadia Mono", Consolas, monospace; letter-spacing: 0; color: #62f3ff; text-shadow: 0 0 10px #62f3ff; }
 #hudnet { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: none; }
 .hudflash { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: none; opacity: 0; background: radial-gradient(circle at 70% 40%, rgba(98, 243, 255, .12), transparent 55%); }
-body.view-dance #hudnet, body.view-dance .hudflash { display: block; }
+:root[data-theme="dark"] body #hudnet, :root[data-theme="dark"] body.view-dance .hudflash { display: block; }
 .hudflash.beat { animation: hudflash .6s ease-out; }
 @keyframes hudflash { 0% { opacity: 1; } 60%, 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .hudreactor i, .hudflash, body.view-dance .pane::before, body.view-dance .panetitle::before { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .hudreactor i, .hudflash, :root[data-theme="dark"] body .pane::before, :root[data-theme="dark"] body .panetitle::before { animation: none !important; } }
 
 </style>
 </head>
@@ -2968,8 +2967,8 @@ if (typeof module !== 'undefined') module.exports = KK2;
   dAudio.addEventListener('pause', danceStill);
 
   // The HUD's particle net behind the views: slow drifting points joined by thin lines, brighter for a
-  // moment after each beat. It only runs while Dance is chosen, and stands still when the visitor
-  // asks for less motion.
+  // moment after each beat in Dance. Asked for: the HUD look in Problem and Lösning too, so it runs
+  // in every view while the dark theme is on, and stands still when the visitor asks for less motion.
   var hudReactor = document.querySelector('.hudreactor'), hudFlash = document.querySelector('.hudflash');
   var hudNet = document.getElementById('hudnet'), hudCtx = hudNet.getContext('2d'), hudPts = [], hudRaf = 0, hudLastBeat = -1e9;
   var hudStill = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2999,15 +2998,19 @@ if (typeof module !== 'undefined') module.exports = KK2;
       hudCtx.fillStyle = 'rgba(170,245,255,' + (0.4 * pulse).toFixed(2) + ')';
       hudCtx.fillRect(p.x - 1, p.y - 1, 2, 2);
     }
-    if (!hudStill && document.body.classList.contains('view-dance')) hudRaf = requestAnimationFrame(hudDraw);
+    if (!hudStill && hudDark() && !document.hidden) hudRaf = requestAnimationFrame(hudDraw);
   }
-  function hudRun(on) {
+  function hudDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+  function hudRun() {
     cancelAnimationFrame(hudRaf);
-    if (!on) return;
+    if (!hudDark()) { hudCtx.clearRect(0, 0, hudNet.width, hudNet.height); return; }
     hudSize();
     hudRaf = requestAnimationFrame(hudDraw);
   }
-  addEventListener('resize', function () { if (document.body.classList.contains('view-dance')) hudSize(); });
+  addEventListener('resize', function () { if (hudDark()) hudSize(); });
+  // Ljust/mörkt switches the theme after this click handler's turn; start or stop the net then.
+  document.getElementById('theme').addEventListener('click', function () { setTimeout(hudRun, 0); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) hudRun(); });
   // Asked for: the lyrics mapped to the flow chart, the class diagram and the code. Each line has
   // targets (from the build's dance map), each from a word on: a class, a part of a class, a bug or
   // extension, or a line in the code now. The target becomes the focus, as if it was clicked, so
@@ -3083,7 +3086,6 @@ if (typeof module !== 'undefined') module.exports = KK2;
   // back as they were.
   function danceViewChanged(on) {
     if (!layout) return;
-    hudRun(on);
     if (on && !layout.beforeDance) {
       layout.beforeDance = { panel: !!layout.hidden.panel, run: !!layout.hidden.run };
       layout.hidden.panel = true;
@@ -3111,6 +3113,7 @@ if (typeof module !== 'undefined') module.exports = KK2;
   refreshCode();
   if (!layout.hidden.run) ensureRun();
   danceViewChanged(document.body.classList.contains('view-dance'));
+  hudRun();
   if (document.body.classList.contains('view-dance')) dancePlay();
 
   var start = DATA.order.indexOf(location.hash.slice(1));
