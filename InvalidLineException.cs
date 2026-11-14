@@ -9,4 +9,11 @@ class InvalidLineException : Exception
     {
         LineNumber = lineNumber;
     }
+
+    // Asked for: utbyggnad U3-2. The same, but it also keeps the exception that caused it (for
+    // example Item's ArgumentException) as the inner exception, so nothing about the cause is lost.
+    public InvalidLineException(int lineNumber, string message, Exception inner) : base(message, inner)
+    {
+        LineNumber = lineNumber;
+    }
 }

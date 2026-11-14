@@ -172,19 +172,11 @@ class ShoppingList
             }
             // Asked for: utbyggnad U3-1. ParseLine throws our own InvalidLineException for a line that
             // cannot be read. Catch it, say which line it was and what was wrong, and skip the line.
+            // Asked for: utbyggnad U3-2. This is now the only catch: ParseLine also turns Item's refusal
+            // of an empty name (U1-1) or a negative price (U1-2) into an InvalidLineException.
             catch (InvalidLineException e)
             {
                 Console.WriteLine($"Rad {e.LineNumber} i {path} kunde inte läsas och hoppades över, {e.Message}: {line}");
-            }
-            // Asked for: utbyggnad U1-2. A line with a negative price, like "-5;Ost", is refused by Item.
-            // The more specific ArgumentOutOfRangeException must be caught before ArgumentException.
-            catch (ArgumentOutOfRangeException)
-            {
-                Console.WriteLine($"En rad i {path} har ett negativt pris och hoppades över: {line}");
-            }
-            catch (ArgumentException)
-            {
-                Console.WriteLine($"En rad i {path} har ett tomt namn och hoppades över: {line}");
             }
         }
     }
@@ -210,6 +202,21 @@ class ShoppingList
             throw new InvalidLineException(lineNumber, "priset är inte ett heltal");
         }
 
-        return new Item(parts[1], price);
+        // Asked for: utbyggnad U3-2. Item refuses an empty name or a negative price with its own
+        // exceptions (U1). Turn them into an InvalidLineException with the line number, and keep
+        // Item's exception as the inner exception. The more specific ArgumentOutOfRangeException
+        // must be caught before ArgumentException, as in U1-2.
+        try
+        {
+            return new Item(parts[1], price);
+        }
+        catch (ArgumentOutOfRangeException e)
+        {
+            throw new InvalidLineException(lineNumber, "priset är negativt", e);
+        }
+        catch (ArgumentException e)
+        {
+            throw new InvalidLineException(lineNumber, "namnet är tomt", e);
+        }
     }
 }
