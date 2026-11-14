@@ -176,6 +176,15 @@ body.view-fix .vstart, body.view-bug .vnow { display: none; }
 .lyline.unsung { opacity: .45; cursor: default; }
 .lyline.unsung:hover { background: none; }
 .lynote { color: var(--warn); font-size: 13px; margin: 14px 0 6px; }
+#danceintro { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter: blur(3px); cursor: pointer; }
+#danceintro[hidden] { display: none; }
+.introbox { text-align: center; max-width: 420px; padding: 28px 32px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+.introplay { width: 84px; height: 84px; margin: 0 auto 14px; border-radius: 50%; background: var(--mark); color: var(--bg); font-size: 38px; line-height: 84px; padding-left: 6px; animation: intropulse 1.28s ease-in-out infinite; }
+@keyframes intropulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.introtitle { font-size: 19px; font-weight: 700; margin: 0 0 6px; }
+.introbox p { margin: 4px 0; }
+.introwhy { color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .introplay { animation: none; } }
 #panes { --amp: .7; }
 .node, .cdm, .cdc { transform-box: fill-box; transform-origin: center; }
 @keyframes bop { 0% { transform: none; } 18% { transform: translateY(calc(-4px * var(--amp))) scale(calc(1 + .035 * var(--amp))); } 100% { transform: none; } }
@@ -934,6 +943,7 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
   </div>
   </section>
 </main>
+<div id="danceintro" hidden><div class="introbox"><div class="introplay" aria-hidden="true">▶</div><p class="introtitle">The Farm Called C-Sharp</p><p>Klicka var som helst eller tryck på en tangent för att starta låten.</p><p class="introwhy">Webbläsaren spelar inte ljud förrän du har klickat eller tryckt på en tangent på sidan.</p></div></div>
 <script>
 // Asked for: run the program on the flow chart page. GitHub Pages cannot run C#, so this is a
 // JavaScript copy of Program.cs, ShoppingList.cs, Item.cs and InvalidLineException.cs, written to
@@ -1582,8 +1592,14 @@ if (typeof module !== 'undefined') module.exports = KK2;
       if (btn.getAttribute('data-view') === 'dance') dancePlay();
     });
   });
-  var view = 'bug';
-  try { view = localStorage.getItem('kk2-vy') || 'bug'; } catch (e) {}
+  // Asked for: the page starts in Dance and the song plays by itself. A link to a box or a report
+  // (#...) still opens that, in Problem or Lösning as last chosen in this browser (not Dance, which
+  // hides the explanation), and ?vy= picks a view.
+  var view = 'dance';
+  if (location.hash.length > 1) {
+    view = 'bug';
+    try { if (localStorage.getItem('kk2-vy') === 'fix') view = 'fix'; } catch (e) {}
+  }
   var asked = (location.search.match(/[?&]vy=([a-z]+)/) || [])[1];
   if (asked === 'losning') view = 'fix';
   if (asked === 'problem') view = 'bug';
@@ -2847,7 +2863,25 @@ if (typeof module !== 'undefined') module.exports = KK2;
     if (!layout) return;
     if (layout.hidden.dance) { layout.hidden.dance = false; applyLayout(); }
     var p = dAudio.play();
-    if (p && p.catch) p.catch(function () {});
+    if (p && p.catch) p.catch(function (e) { if (e && e.name === 'NotAllowedError') danceAskToStart(); });
+    return p;
+  }
+  // Asked for: the song plays by itself when the page opens. Browsers only allow sound after the
+  // visitor has clicked or pressed a key on the page, so when the browser stops the song a start
+  // button covers the page, and the first click or key press anywhere starts the song.
+  var danceIntro = document.getElementById('danceintro');
+  function danceAskToStart() {
+    if (!danceIntro.hidden) return;
+    danceIntro.hidden = false;
+    function go(e) {
+      if (e.type === 'keydown' && (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta')) return;
+      document.removeEventListener('pointerdown', go, true);
+      document.removeEventListener('keydown', go, true);
+      danceIntro.hidden = true;
+      if (document.body.classList.contains('view-dance')) dancePlay();
+    }
+    document.addEventListener('pointerdown', go, true);
+    document.addEventListener('keydown', go, true);
   }
   function dancePause() { if (!dAudio.paused) dAudio.pause(); }
   // Choosing Dance shows the Dance view beside the flow chart, the class diagram and the code (the
@@ -2882,6 +2916,7 @@ if (typeof module !== 'undefined') module.exports = KK2;
   refreshCode();
   if (!layout.hidden.run) ensureRun();
   danceViewChanged(document.body.classList.contains('view-dance'));
+  if (document.body.classList.contains('view-dance')) dancePlay();
 
   var start = DATA.order.indexOf(location.hash.slice(1));
   if (start >= 0) render(start);
