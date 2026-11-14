@@ -158,9 +158,16 @@ class ShoppingList
 
         if (lines.Length > 0 && lines[0].StartsWith("budget;"))
         {
-            if (int.TryParse(lines[0].Substring("budget;".Length), out int savedBudget))
+            // Asked for: utbyggnad U4-2. A budget line that cannot be read, or a negative budget, must not
+            // be ignored without a word or leave a budget nothing fits in. ParseBudget throws our own
+            // InvalidLineException; say what was wrong and keep the budget from the constructor.
+            try
             {
-                Budget = savedBudget;
+                Budget = ParseBudget(lines[0]);
+            }
+            catch (InvalidLineException e)
+            {
+                Console.WriteLine($"Rad {e.LineNumber} i {path} kunde inte läsas, {e.Message}: {lines[0]}. Budgettaket är {Budget} kr.");
             }
 
             firstItemLine = 1;
@@ -200,6 +207,23 @@ class ShoppingList
                 Console.WriteLine($"Rad {e.LineNumber} i {path} kunde inte läsas och hoppades över, {e.Message}: {line}");
             }
         }
+    }
+
+    // Asked for: utbyggnad U4-2. Reads the budget from the first line, "budget;1000". A value that is not
+    // a whole number, or is negative, throws InvalidLineException for line 1.
+    private int ParseBudget(string line)
+    {
+        if (!int.TryParse(line.Substring("budget;".Length), out int budget))
+        {
+            throw new InvalidLineException(1, "budgettaket är inte ett heltal");
+        }
+
+        if (budget < 0)
+        {
+            throw new InvalidLineException(1, "budgettaket får inte vara negativt");
+        }
+
+        return budget;
     }
 
     // Asked for: utbyggnad U3-1. Turns one line of the file into an item. A line that cannot be read
