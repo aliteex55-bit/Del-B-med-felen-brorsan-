@@ -136,9 +136,24 @@ Nackdelen med `false` är att man kan glömma att titta på svaret. Då försvin
 
 **Bra att veta:** raderna i filen läses uppifrån och ner, så ordningen avgör vilka varor som kommer med. En rad som hoppats över försvinner ur filen nästa gång man sparar, precis som en trasig rad.
 
+### U3: Egen undantagstyp för trasiga rader
+
+**Vad krävdes:** en frivillig extrauppgift, som inte påverkar betyget: en egen undantagstyp som ärver från `Exception`.
+
+**Före:** en trasig rad i `items.txt` gav "En rad i items.txt kunde inte läsas och hoppades över: abc;Ost", med radens text men utan radnummer och utan att säga vad som var fel. Ett tomt namn och ett negativt pris fångades med två egna `catch` i `Load`.
+
+**Så gjordes det, i två steg:**
+
+1. Den nya klassen `InvalidLineException` ärver från `Exception` och har egenskapen `LineNumber`. Att göra om en rad till en vara flyttades till den nya metoden `ParseLine`, som kastar `InvalidLineException` när raden saknar `;` eller när priset inte är ett heltal. `Load` loopar med `for` i stället för `foreach`, så att radnumret är känt, och fångar undantaget ([40e6af8](https://github.com/aliteex55-bit/Del1-2brooor/commit/40e6af8)).
+2. `InvalidLineException` får en andra konstruktor som också tar emot undantaget som orsakade felet. `ParseLine` gör om `Item`s undantag för ett tomt namn och ett negativt pris till `InvalidLineException`, och skickar med `Item`s undantag som inner exception. Då har `Load` bara en `catch` för alla trasiga rader ([a81b109](https://github.com/aliteex55-bit/Del1-2brooor/commit/a81b109)).
+
+**Varför en egen typ:** `Load` kan fånga just trasiga rader med en egen `catch`, och undantaget bär med sig radnumret, så meddelandet kan säga var i filen felet finns. Med `: base(message, inner)` går orsaken inte förlorad, den finns kvar i `InnerException`. Budgettaket använder fortfarande `false`, enligt designvalet i U2, eftersom en vara som inte ryms inte är ett fel i programmet.
+
+**Provat:** en fil med `15;`, `-5;Ost`, `   ;Tom`, `Ost`, en tom rad och `abc;Ost` ger ett meddelande för varje trasig rad med rätt radnummer, till exempel "Rad 2 i items.txt kunde inte läsas och hoppades över, priset är negativt: -5;Ost". Den tomma raden hoppas över utan meddelande, som förut. Ett litet testprogram utanför repot, som anropade den privata `ParseLine` med reflection, visade att inner exception är `ArgumentException` för `15;` och `ArgumentOutOfRangeException` för `-5;Ost`. Lärarens fil, budgettaket och menyn fungerar som förut.
+
 ## Klassdiagram
 
-Programmet efter ändringarna, i tre rutor. `+` betyder `public` och `-` betyder `private`.
+Programmet efter ändringarna. `Program`, `ShoppingList` och `Item` är de tre klasserna från uppgiften, och `InvalidLineException` kom till i extrauppgiften U3. `+` betyder `public` och `-` betyder `private`.
 
 ```mermaid
 classDiagram
@@ -160,6 +175,7 @@ classDiagram
         +Print()
         +Save()
         +Load()
+        -ParseLine(string line, int lineNumber) Item
     }
     class Item {
         +string Name
@@ -167,13 +183,21 @@ classDiagram
         +Item(string name, int price)
         +ToString() string
     }
+    class InvalidLineException {
+        +int LineNumber
+        +InvalidLineException(int lineNumber, string message)
+        +InvalidLineException(int lineNumber, string message, Exception inner)
+    }
     Program --> ShoppingList : skapar och använder
     Program ..> Item : skapar med new Item
     ShoppingList "1" *-- "0..*" Item : items
+    Exception <|-- InvalidLineException
+    ShoppingList ..> InvalidLineException : kastar och fångar
 ```
 
 - **Program** är `Program.cs`, därav märket `<<Program.cs>>`. Filen har ingen egen klass i koden, eftersom den använder toppnivåsatser (top-level statements), men kompilatorn lägger raderna i en metod i en klass som heter `Program`. Den skapar listan med budgettaket 1000 kr, visar menyn och skapar en `Item` av namnet och priset som användaren skriver. `list` har inget `+` eller `-`, för den är en lokal variabel och inte ett fält.
-- **ShoppingList** har varorna i listan `items` och sparar dem i filen `path`. `Budget` kan bara läsas, den sätts i konstruktorn. `Add` och `RemoveAt` returnerar `true` eller `false`. `Load` läser filen (`items.txt`), skapar en `Item` av varje rad som går att läsa och lägger in den med `Add`. `Save` skriver filen.
+- **ShoppingList** har varorna i listan `items` och sparar dem i filen `path`. `Budget` kan bara läsas, den sätts i konstruktorn. `Add` och `RemoveAt` returnerar `true` eller `false`. `Load` läser filen (`items.txt`), skapar en `Item` av varje rad som går att läsa med hjälp av `ParseLine` och lägger in den med `Add`. `ParseLine` är `private`, så bara `ShoppingList` själv kan anropa den. `Save` skriver filen.
 - **Item** är en vara med namn och pris. Konstruktorn kastar `ArgumentException` för ett tomt namn och `ArgumentOutOfRangeException` för ett negativt pris.
+- **InvalidLineException** är vår egen undantagstyp från U3. Den har radnumret i `LineNumber` och två konstruktorer. Båda tar emot radnumret och ett meddelande, och den andra tar också emot undantaget som orsakade felet. Rutan `Exception` är den inbyggda klassen i .NET som den ärver från.
 
-Den heldragna pilen betyder att `Program` skapar och använder en `ShoppingList`, som finns i variabeln `list` hela körningen. Den streckade pilen betyder att `Program` bara skapar `Item`-objekt med `new Item(...)` och lämnar över dem till `Add`. Den fyllda romben (komposition) betyder att en `ShoppingList` äger sina `Item` i listan `items`, och `1` och `0..*` betyder att en lista har noll eller flera varor.
+Den heldragna pilen betyder att `Program` skapar och använder en `ShoppingList`, som finns i variabeln `list` hela körningen. Den streckade pilen till `Item` betyder att `Program` bara skapar `Item`-objekt med `new Item(...)` och lämnar över dem till `Add`. Den fyllda romben (komposition) betyder att en `ShoppingList` äger sina `Item` i listan `items`, och `1` och `0..*` betyder att en lista har noll eller flera varor. Pilen med en ihålig triangel betyder arv: `InvalidLineException` ärver från `Exception`. Den streckade pilen till `InvalidLineException` betyder att `ShoppingList` kastar och fångar den.
