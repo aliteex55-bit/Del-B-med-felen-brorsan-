@@ -176,6 +176,25 @@ body.view-fix .vstart, body.view-bug .vnow { display: none; }
 .lyline.unsung { opacity: .45; cursor: default; }
 .lyline.unsung:hover { background: none; }
 .lynote { color: var(--warn); font-size: 13px; margin: 14px 0 6px; }
+#panes { --amp: .7; }
+.node, .cdm, .cdc { transform-box: fill-box; transform-origin: center; }
+@keyframes bop { 0% { transform: none; } 18% { transform: translateY(calc(-4px * var(--amp))) scale(calc(1 + .035 * var(--amp))); } 100% { transform: none; } }
+@keyframes bopdown { 0% { transform: none; } 15% { transform: translateY(calc(-7px * var(--amp))) scale(calc(1 + .07 * var(--amp))) rotate(calc(-1.5deg * var(--amp))); } 45% { transform: translateY(calc(1px * var(--amp))) rotate(calc(1deg * var(--amp))); } 100% { transform: none; } }
+.node.bop, .cdm.bop, .cdc.bop { animation: bop .36s ease-out; }
+.node.bop-down, .cdm.bop-down, .cdc.bop-down { animation: bopdown .5s ease-out; }
+@keyframes codeglow { 0% { box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--ok) calc(38% * var(--amp)), transparent); } 100% { box-shadow: inset 0 0 0 999px transparent; } }
+#codepane tr.blk.bop td, #codepane tr.blk.bop-down td { animation: codeglow .42s ease-out; }
+@keyframes swayl { 0% { transform: none; } 25% { transform: translateX(calc(-6px * var(--amp))) rotate(calc(-.7deg * var(--amp))); } 100% { transform: none; } }
+@keyframes swayr { 0% { transform: none; } 25% { transform: translateX(calc(6px * var(--amp))) rotate(calc(.7deg * var(--amp))); } 100% { transform: none; } }
+.lyline.now.sway-l { animation: swayl .45s ease-out; }
+.lyline.now.sway-r { animation: swayr .45s ease-out; }
+@keyframes hop { 30% { transform: translateY(-3px); } 100% { transform: none; } }
+.lyline.now .w.on { display: inline-block; animation: hop .28s ease-out; }
+.beatbar { display: flex; gap: 8px; align-items: center; margin: 2px 0 6px; height: 18px; }
+.beatbar span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); transition: background .08s, transform .08s; }
+.beatbar span.on { background: var(--ok); transform: scale(1.35); }
+.beatbar span.on:first-child { background: var(--mark); transform: scale(1.7); }
+@media (prefers-reduced-motion: reduce) { .node.bop, .cdm.bop, .cdc.bop, .node.bop-down, .cdm.bop-down, .cdc.bop-down, .lyline.now.sway-l, .lyline.now.sway-r, .lyline.now .w.on { animation: none; } }
 .splitter { flex: 0 0 7px; cursor: col-resize; background: var(--line); opacity: .45; }
 .splitter:hover, .splitter.drag, .splitter:focus-visible { opacity: 1; background: var(--accent); outline: none; }
 .vyer { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
@@ -904,6 +923,7 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
   <div class="panebody" id="dancepane">
     <p class="runnote">The Farm Called C-Sharp. Texten lyser i takt med låten. Klicka på en rad för att hoppa dit i låten.</p>
     <audio id="danceaudio" controls preload="metadata" src="ljud/the-farm-called-c-sharp.mp3"></audio>
+    <div class="beatbar" id="beatbar" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
     <div class="lyrics" id="lyrics"></div>
   </div>
   </section>
@@ -2740,8 +2760,43 @@ if (typeof module !== 'undefined') module.exports = KK2;
         danceWordChanged(i, w);
       }
     }
+    var b = danceBeatAt(t);
+    if (b !== dBeat) {
+      dBeat = b;
+      if (b >= 0 && !dAudio.paused) dancePulse(b);
+    }
     if (!dAudio.paused) dRaf = requestAnimationFrame(danceTick);
   }
+
+  // Asked for: the highlights dance lightly to the rhythm and the music. The beats were measured
+  // from the song's drums (about 93.7 BPM, with the small tempo drift followed), and beat 1 of each
+  // bar is where most lyric lines start. On each beat the lit things bounce, more on beat 1 and
+  // more when the song is loud there.
+  var DB = DATA.dance.beats, DBL = DATA.dance.beatLoudness, DDOWN = DATA.dance.downbeatIndex, dBeat = -1, dSway = 1;
+  var beatDots = document.querySelectorAll('#beatbar span');
+  function danceBeatAt(t) {
+    var lo = 0, hi = DB.length - 1, found = -1;
+    while (lo <= hi) { var mid = (lo + hi) >> 1; if (DB[mid] <= t) { found = mid; lo = mid + 1; } else hi = mid - 1; }
+    return found;
+  }
+  var BOP = '.node.multi, .node.sel, .cdm.sel, .cdm.rel, .cdc.sel, #codepane tr.blk';
+  function danceStill() {
+    document.querySelectorAll('.bop, .bop-down').forEach(function (e) { e.classList.remove('bop', 'bop-down'); });
+    var line = lyricsEl.querySelector('.lyline.now');
+    if (line) line.classList.remove('sway-l', 'sway-r');
+    beatDots.forEach(function (d) { d.classList.remove('on'); });
+  }
+  function dancePulse(b) {
+    var pos = ((b - DDOWN) % 4 + 4) % 4;
+    hub.style.setProperty('--amp', (0.45 + 0.55 * (DBL[b] || 0)).toFixed(2));
+    var els = document.querySelectorAll(BOP), line = lyricsEl.querySelector('.lyline.now');
+    danceStill();
+    void document.body.offsetWidth;    // so the same animation starts again on this beat
+    els.forEach(function (e) { e.classList.add(pos === 0 ? 'bop-down' : 'bop'); });
+    if (line) { dSway = -dSway; line.classList.add(dSway > 0 ? 'sway-r' : 'sway-l'); }
+    beatDots[pos].classList.add('on');
+  }
+  dAudio.addEventListener('pause', danceStill);
   // Asked for: the lyrics mapped to the flow chart, the class diagram and the code. Each line has
   // targets (from the build's dance map), each from a word on: a class, a part of a class, a bug or
   // extension, or a line in the code now. The target becomes the focus, as if it was clicked, so
