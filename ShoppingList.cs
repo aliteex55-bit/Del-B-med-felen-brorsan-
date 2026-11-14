@@ -87,23 +87,28 @@ class ShoppingList
     // Writes one item per line, as "price;name".
     public void Save()
     {
-        List<string> lines = new List<string>();
-
-        // Asked for: utbyggnad U4-1, save the budget in the file together with the items. It goes on the
-        // first line, as "budget;1000", so Load can read it before any item is added.
-        lines.Add($"budget;{Budget}");
-
-        foreach (Item item in items)
-        {
-            lines.Add($"{item.Price};{item.Name}");
-        }
-
         try
         {
-            File.WriteAllText(path, string.Join("\r\n", lines) + "\r\n");
+            // Asked for: utbyggnad U5-1, using where it is useful. The lines are written straight to the
+            // file with a StreamWriter. using closes the file when the block ends, also when writing
+            // fails half-way and an exception jumps to catch, so the file is never left open.
+            using (StreamWriter writer = new StreamWriter(path))
+            {
+                // Same line breaks as before, \r\n, whatever computer the program runs on.
+                writer.NewLine = "\r\n";
+
+                // Asked for: utbyggnad U4-1, save the budget in the file together with the items. It goes on the
+                // first line, as "budget;1000", so Load can read it before any item is added.
+                writer.WriteLine($"budget;{Budget}");
+
+                foreach (Item item in items)
+                {
+                    writer.WriteLine($"{item.Price};{item.Name}");
+                }
+            }
 
             // Asked for: fix fel 6, layer 2. Say the list is saved only when the writing actually worked:
-            // this line is reached only if WriteAllText did not throw.
+            // this line is reached only if writing did not throw.
             Console.WriteLine("Listan är sparad.");
         }
         // Asked for: fix fel 6, layer 1. The catch was empty and caught everything, so a failed save
