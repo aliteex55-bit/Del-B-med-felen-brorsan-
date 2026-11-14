@@ -145,25 +145,16 @@ class ShoppingList
             return;
         }
 
-        foreach (string line in lines)
+        // Asked for: utbyggnad U3-1. A for loop instead of foreach, so the line number (i + 1) is known
+        // and the message can say which line of the file was wrong.
+        for (int i = 0; i < lines.Length; i++)
         {
+            string line = lines[i];
+
             // Asked for: fix the crash at start, layer 1. An empty line holds no item and has no parts[1], so skip it.
             // Since layer 2 the file's last line break no longer gives an empty line, but a blank line inside the file still does.
             if (string.IsNullOrWhiteSpace(line))
             {
-                continue;
-            }
-
-            // Asked for: meet the requirement that the list looks the same after a restart. A name may itself
-            // contain ";" (for example "Kaffe;bryggt"). Split at the first ";" only, into at most 2 parts,
-            // so everything after it stays the name.
-            string[] parts = line.Split(';', 2);
-
-            // Asked for: fix fel 1, layer 3. A broken line in the file must not crash the program.
-            // It needs a ";" (two parts) and a whole-number price; otherwise tell the user and skip the line.
-            if (parts.Length < 2 || !int.TryParse(parts[0], out int price))
-            {
-                Console.WriteLine($"En rad i {path} kunde inte läsas och hoppades över: {line}");
                 continue;
             }
 
@@ -174,10 +165,16 @@ class ShoppingList
                 // Asked for: utbyggnad U2-3. Load must respect the budget too, so it goes through Add
                 // instead of putting the item straight into the list. A line whose item does not fit is
                 // skipped with a message, like the other lines that cannot be used.
-                if (!Add(new Item(parts[1], price)))
+                if (!Add(ParseLine(line, i + 1)))
                 {
                     Console.WriteLine($"En rad i {path} ryms inte i budgeten på {Budget} kr och hoppades över: {line}");
                 }
+            }
+            // Asked for: utbyggnad U3-1. ParseLine throws our own InvalidLineException for a line that
+            // cannot be read. Catch it, say which line it was and what was wrong, and skip the line.
+            catch (InvalidLineException e)
+            {
+                Console.WriteLine($"Rad {e.LineNumber} i {path} kunde inte läsas och hoppades över, {e.Message}: {line}");
             }
             // Asked for: utbyggnad U1-2. A line with a negative price, like "-5;Ost", is refused by Item.
             // The more specific ArgumentOutOfRangeException must be caught before ArgumentException.
@@ -190,5 +187,29 @@ class ShoppingList
                 Console.WriteLine($"En rad i {path} har ett tomt namn och hoppades över: {line}");
             }
         }
+    }
+
+    // Asked for: utbyggnad U3-1. Turns one line of the file into an item. A line that cannot be read
+    // throws our own InvalidLineException, with the line number and what was wrong.
+    private Item ParseLine(string line, int lineNumber)
+    {
+        // Asked for: meet the requirement that the list looks the same after a restart. A name may itself
+        // contain ";" (for example "Kaffe;bryggt"). Split at the first ";" only, into at most 2 parts,
+        // so everything after it stays the name.
+        string[] parts = line.Split(';', 2);
+
+        // Asked for: fix fel 1, layer 3. A broken line in the file must not crash the program.
+        // It needs a ";" (two parts) and a whole-number price.
+        if (parts.Length < 2)
+        {
+            throw new InvalidLineException(lineNumber, "det saknas ett ; mellan pris och namn");
+        }
+
+        if (!int.TryParse(parts[0], out int price))
+        {
+            throw new InvalidLineException(lineNumber, "priset är inte ett heltal");
+        }
+
+        return new Item(parts[1], price);
     }
 }
