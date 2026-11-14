@@ -5,7 +5,9 @@ class ShoppingList
     private string path;
 
     // Asked for: utbyggnad U2-1. The list has a budget: the most the whole list may cost, in whole kronor.
-    public int Budget { get; }
+    // Asked for: utbyggnad U4-1. private set, so Load can take the budget saved in the file. Code
+    // outside ShoppingList can still only read it.
+    public int Budget { get; private set; }
 
     public ShoppingList(string path, int budget)
     {
@@ -87,6 +89,10 @@ class ShoppingList
     {
         List<string> lines = new List<string>();
 
+        // Asked for: utbyggnad U4-1, save the budget in the file together with the items. It goes on the
+        // first line, as "budget;1000", so Load can read it before any item is added.
+        lines.Add($"budget;{Budget}");
+
         foreach (Item item in items)
         {
             lines.Add($"{item.Price};{item.Name}");
@@ -145,9 +151,24 @@ class ShoppingList
             return;
         }
 
+        // Asked for: utbyggnad U4-1. If the first line is the saved budget, "budget;1000", use it and
+        // start the items on the next line. A file saved before U4 has no such line, and then the
+        // budget from the constructor (1000 kr) stays.
+        int firstItemLine = 0;
+
+        if (lines.Length > 0 && lines[0].StartsWith("budget;"))
+        {
+            if (int.TryParse(lines[0].Substring("budget;".Length), out int savedBudget))
+            {
+                Budget = savedBudget;
+            }
+
+            firstItemLine = 1;
+        }
+
         // Asked for: utbyggnad U3-1. A for loop instead of foreach, so the line number (i + 1) is known
         // and the message can say which line of the file was wrong.
-        for (int i = 0; i < lines.Length; i++)
+        for (int i = firstItemLine; i < lines.Length; i++)
         {
             string line = lines[i];
 

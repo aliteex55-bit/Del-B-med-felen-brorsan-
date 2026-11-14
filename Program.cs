@@ -1,4 +1,6 @@
 // Asked for: utbyggnad U2-1. The list gets a budget of 1000 kr, the amount the user chose.
+// Asked for: utbyggnad U4-1. 1000 kr is now the budget a new list starts with; a budget saved in
+// items.txt replaces it when Load reads the file.
 ShoppingList list = new ShoppingList("items.txt", 1000);
 list.Load();
 
