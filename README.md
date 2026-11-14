@@ -135,3 +135,45 @@ Nackdelen med `false` är att man kan glömma att titta på svaret. Då försvin
 **Provat:** 864 kr till lärarens 136 kr ger exakt 1000 kr. 865 kr, 5000 kr och `2147483647` kr läggs inte till, och programmet säger hur mycket som finns kvar. 0 kr går att lägga till även när listan är på 1000 kr. En `items.txt` med `2000;Tv` hoppas över med ett meddelande, och med 900, 200 och 100 kr läses 900 kr och 100 kr in. Tomt namn, negativt pris och bokstäver i priset ger samma meddelanden som förut.
 
 **Bra att veta:** raderna i filen läses uppifrån och ner, så ordningen avgör vilka varor som kommer med. En rad som hoppats över försvinner ur filen nästa gång man sparar, precis som en trasig rad.
+
+## Klassdiagram
+
+Programmet efter ändringarna, i tre rutor. `+` betyder `public` och `-` betyder `private`.
+
+```mermaid
+classDiagram
+    direction LR
+    class Program {
+        <<Program.cs>>
+        ShoppingList list, en lokal variabel
+        visar menyn 1–5 i en loop
+    }
+    class ShoppingList {
+        -List~Item~ items
+        -string path
+        +int Budget
+        +ShoppingList(string path, int budget)
+        +Add(Item item) bool
+        +RemoveAt(int number) bool
+        +Total() int
+        +Find(string name) Item
+        +Print()
+        +Save()
+        +Load()
+    }
+    class Item {
+        +string Name
+        +int Price
+        +Item(string name, int price)
+        +ToString() string
+    }
+    Program --> ShoppingList : skapar och använder
+    Program ..> Item : skapar med new Item
+    ShoppingList "1" *-- "0..*" Item : items
+```
+
+- **Program** är `Program.cs`, därav märket `<<Program.cs>>`. Filen har ingen egen klass i koden, eftersom den använder toppnivåsatser (top-level statements), men kompilatorn lägger raderna i en metod i en klass som heter `Program`. Den skapar listan med budgettaket 1000 kr, visar menyn och skapar en `Item` av namnet och priset som användaren skriver. `list` har inget `+` eller `-`, för den är en lokal variabel och inte ett fält.
+- **ShoppingList** har varorna i listan `items` och sparar dem i filen `path`. `Budget` kan bara läsas, den sätts i konstruktorn. `Add` och `RemoveAt` returnerar `true` eller `false`. `Load` läser filen (`items.txt`), skapar en `Item` av varje rad som går att läsa och lägger in den med `Add`. `Save` skriver filen.
+- **Item** är en vara med namn och pris. Konstruktorn kastar `ArgumentException` för ett tomt namn och `ArgumentOutOfRangeException` för ett negativt pris.
+
+Den heldragna pilen betyder att `Program` skapar och använder en `ShoppingList`, som finns i variabeln `list` hela körningen. Den streckade pilen betyder att `Program` bara skapar `Item`-objekt med `new Item(...)` och lämnar över dem till `Add`. Den fyllda romben (komposition) betyder att en `ShoppingList` äger sina `Item` i listan `items`, och `1` och `0..*` betyder att en lista har noll eller flera varor.
