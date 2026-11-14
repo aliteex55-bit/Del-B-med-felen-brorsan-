@@ -301,6 +301,148 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
   #runpane { max-height: 90vh; }
   #chart { border-right: 0; border-bottom: 1px solid var(--line); }
 }
+/* Asked for: the Stark-style HUD look on the Dance view, keeping the page's own layout (flow chart,
+   class diagram, code and the Dance lyrics), and keeping the colour code of the dark theme: red =
+   bug, green = fixed layer, purple = highlighted (and beat 1), blue = chosen / extension, yellow =
+   focus line in the code. Cyan (--hud) is only the HUD's frame: grid, panel edges, sweeps and the
+   reactor rings, which mean nothing. Only applies while Dance is chosen, so choosing Dance "suits
+   up" the page and Problem/Lösning keep their look. The generator puts this file into <style>. */
+body.view-dance {
+  --hud: #62f3ff; --hud-dim: rgba(98, 243, 255, .32); --hud-faint: rgba(98, 243, 255, .07);
+  --bg: #02070e; --panel: rgba(6, 34, 52, .55); --text: #d8f6ff; --muted: rgba(160, 220, 245, .62); --line: rgba(98, 243, 255, .2);
+  --code-bg: rgba(1, 10, 18, .55);
+  color-scheme: dark;
+  background: radial-gradient(ellipse 70% 60% at 50% 35%, #072a42 0%, #03111e 45%, #02070e 80%);
+  font-family: "Bahnschrift", "Segoe UI", system-ui, sans-serif; letter-spacing: .02em;
+}
+body.view-dance::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: linear-gradient(rgba(98, 243, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(98, 243, 255, .045) 1px, transparent 1px);
+  background-size: 36px 36px; }
+body.view-dance::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 40;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .16) 0 1px, transparent 1px 3px); }
+body.view-dance header, body.view-dance main { position: relative; z-index: 1; }
+
+/* Header: transparent, a glowing line under it, angled HUD buttons */
+body.view-dance header { background: rgba(2, 12, 22, .55); border-bottom: 1px solid var(--hud-dim); box-shadow: 0 1px 18px rgba(98, 243, 255, .18); }
+body.view-dance header h1 { text-transform: uppercase; letter-spacing: .22em; font-weight: 700; font-size: 16px; color: #eaffff;
+  text-shadow: -1.5px 0 rgba(255, 60, 90, .6), 1.5px 0 rgba(60, 220, 255, .85), 0 0 16px rgba(98, 243, 255, .55); }
+body.view-dance header .hint { color: var(--muted); font-size: 12px; }
+body.view-dance button, body.view-dance select { background: var(--hud-faint); border: 1px solid var(--hud-dim); color: var(--hud);
+  border-radius: 0; text-transform: uppercase; letter-spacing: .14em; font-size: 12px; font-weight: 600;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+body.view-dance button:hover { background: rgba(98, 243, 255, .16); }
+body.view-dance .viewbtn[data-view="dance"][aria-pressed="true"] { background: var(--mark); color: var(--bg); box-shadow: 0 0 26px var(--mark); }
+/* The Fel and U buttons keep their own colours and square shape (their purple ring must show) */
+body.view-dance .bugbtn { clip-path: none; background: transparent; border-color: var(--err); color: var(--err); }
+body.view-dance .bugbtn.extbtn { border-color: var(--accent); color: var(--accent); }
+body.view-dance .bugbtn.on { background: var(--err); color: var(--bg); }
+body.view-dance .bugbtn.extbtn.on { background: var(--accent); color: var(--bg); }
+body.view-dance .extlabel { color: var(--muted); letter-spacing: .25em; text-transform: uppercase; font-size: 11px; }
+body.view-dance .viewtoggle[aria-pressed="true"] { background: rgba(98, 243, 255, .16); border-color: var(--hud); }
+
+/* Views: floating holo panels with cut corners, corner brackets and a sweeping top line */
+body.view-dance #panes { gap: 0; padding: 8px 6px; }
+/* overflow: hidden keeps the sweeping line inside its view, so the page never scrolls sideways */
+body.view-dance .pane { position: relative; overflow: hidden; margin: 0 3px; background: linear-gradient(160deg, rgba(14, 90, 125, .22), rgba(3, 22, 36, .35) 60%, rgba(98, 243, 255, .04));
+  border: 1px solid rgba(98, 243, 255, .3); border-right: 1px solid rgba(98, 243, 255, .3);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  box-shadow: inset 0 0 50px rgba(98, 243, 255, .06); }
+body.view-dance .pane::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; z-index: 2;
+  background: linear-gradient(90deg, transparent, var(--hud), transparent); animation: hudsweep 2.562s linear infinite; }
+body.view-dance .pane::after { content: ""; position: absolute; right: 5px; bottom: 5px; width: 14px; height: 14px; z-index: 2;
+  border: solid var(--hud); border-width: 0 2px 2px 0; filter: drop-shadow(0 0 4px var(--hud)); }
+@keyframes hudsweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+body.view-dance .splitter { background: transparent; }
+body.view-dance .panebar { background: rgba(2, 14, 24, .5); border-bottom: 1px solid rgba(98, 243, 255, .22); }
+body.view-dance .panetitle { color: var(--hud); text-transform: uppercase; letter-spacing: .3em; font-size: 11px; }
+body.view-dance .panetitle::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%;
+  background: var(--hud); box-shadow: 0 0 10px var(--hud); animation: hudblink .6405s steps(2) infinite; }
+@keyframes hudblink { 50% { opacity: .2; } }
+body.view-dance .panectl button { clip-path: none; border-color: transparent; background: transparent; color: var(--muted); }
+body.view-dance .zoomval { color: var(--muted); }
+
+/* Flow chart and class diagram: dark glass boxes and cyan wires; the highlighted box keeps the
+   theme's purple, now glowing */
+body.view-dance .node rect, body.view-dance .node polygon { fill: rgba(4, 26, 40, .85); stroke: rgba(98, 243, 255, .42); }
+body.view-dance .node > text { fill: rgba(200, 240, 255, .85); }
+body.view-dance .node.multi > rect, body.view-dance .node.multi > polygon { fill: var(--mark-soft) !important; stroke: var(--mark) !important; }
+body.view-dance .node.multi > text { fill: #ffffff; font-weight: 700; }
+body.view-dance .node.multi { filter: drop-shadow(0 0 8px var(--mark)) drop-shadow(0 0 20px rgba(199, 155, 234, .45)); }
+body.view-dance .node.sel { filter: drop-shadow(0 0 8px var(--accent)); }
+body.view-dance #chart line, body.view-dance #chart path { stroke: rgba(98, 243, 255, .38); }
+body.view-dance .sec { fill: var(--muted); letter-spacing: .2em; }
+body.view-dance .cdc rect { fill: rgba(4, 26, 40, .8); stroke: rgba(98, 243, 255, .45); }
+body.view-dance .cdm.sel { filter: drop-shadow(0 0 8px var(--accent)); }
+body.view-dance .cdm.rel { filter: drop-shadow(0 0 6px var(--mark)); }
+/* The layer labels (1-1, 2-1, U2-1 ...) keep their colours (green fixed, red bug, blue extension)
+   with dark text, a dark rim and a little glow, so they stay readable on the glass */
+body.view-dance .node .okbadge rect, body.view-dance .node .badge rect, body.view-dance .node .extbadge rect { stroke: #02070e !important; stroke-width: 2 !important; }
+body.view-dance .node .okbadge { filter: drop-shadow(0 0 3px var(--ok)); }
+body.view-dance .node .badge { filter: drop-shadow(0 0 3px var(--err)); }
+body.view-dance .node .extbadge { filter: drop-shadow(0 0 3px var(--accent)); }
+
+/* Code: the line being sung keeps the theme's yellow focus, now glowing, with a LOCKED tag */
+body.view-dance .code { background: var(--code-bg); border-color: rgba(98, 243, 255, .2); }
+body.view-dance .codesel, body.view-dance .what { color: var(--muted); }
+body.view-dance .code tr.blk td { color: #fff8e0; text-shadow: 0 0 8px rgba(224, 176, 64, .55); }
+body.view-dance .code tr.blk td.n { color: var(--warn); text-shadow: 0 0 8px var(--warn); }
+body.view-dance .code tr.blk { outline: 1px solid rgba(224, 176, 64, .6); outline-offset: -1px; }
+body.view-dance .code tr.blk td:last-child { position: relative; }
+body.view-dance .code tr.blk td:last-child::after { content: "LOCKED"; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  font: 700 9px "Bahnschrift", "Segoe UI", sans-serif; letter-spacing: .25em; color: var(--warn); text-shadow: 0 0 8px var(--warn); }
+body.view-dance .codetab { clip-path: none; }
+
+/* Dance: the lyrics as a projection; the sung line keeps the theme's blue, sung words blue, the word
+   being sung green */
+body.view-dance .runnote { color: var(--muted); text-transform: uppercase; letter-spacing: .16em; font-size: 11px; }
+body.view-dance .lysec { color: var(--hud); letter-spacing: .4em; opacity: .75; }
+body.view-dance .lyline { color: rgba(170, 220, 245, .42); border-radius: 0; }
+body.view-dance .lyline.now { color: #f2feff; background: linear-gradient(90deg, var(--accent-soft), transparent);
+  border-left: 3px solid var(--accent); font-size: 19px; line-height: 1.35; padding: 8px 10px;
+  text-shadow: 0 0 10px rgba(91, 140, 255, .65), 0 0 26px rgba(91, 140, 255, .35); }
+body.view-dance .lyline.now .w.done { color: var(--accent); }
+body.view-dance .lyline.now .w.on { color: var(--ok); border-bottom: 2px solid var(--ok); }
+body.view-dance .lyline code { background: rgba(98, 243, 255, .08); border-color: var(--hud-dim); color: var(--text); }
+body.view-dance .lyline.now code { background: var(--accent); color: var(--bg); text-shadow: none; box-shadow: 0 0 14px var(--accent); }
+body.view-dance .lyline.now code .w, body.view-dance .lyline.now code .w.done, body.view-dance .lyline.now code .w.on { color: var(--bg); border-bottom: 0; }
+/* The four beat marks as diamonds: green on each beat, purple on beat 1, as before */
+body.view-dance .beatbar { gap: 12px; height: 26px; }
+body.view-dance .beatbar span { width: 13px; height: 13px; border-radius: 0; transform: rotate(45deg); background: transparent; border: 1px solid rgba(98, 243, 255, .45); }
+body.view-dance .beatbar span.on { background: var(--ok); border-color: var(--ok); box-shadow: 0 0 14px var(--ok); transform: rotate(45deg) scale(1.3); }
+body.view-dance .beatbar span.on:first-child { background: var(--mark); border-color: var(--mark); box-shadow: 0 0 18px var(--mark); transform: rotate(45deg) scale(1.55); }
+body.view-dance #danceaudio { filter: drop-shadow(0 0 8px rgba(98, 243, 255, .35)); margin-top: 8px; }
+
+/* Arc reactor beside the player: rings that spin, a core that flashes on every beat */
+.hudreactor { position: relative; width: 112px; height: 112px; flex: none; }
+.hudreactor i { position: absolute; border-radius: 50%; }
+.hudreactor .a { inset: 0; border: 1px dashed rgba(98, 243, 255, .45); animation: hudspin 20s linear infinite; }
+.hudreactor .b { inset: 10px; border: 2px solid transparent; border-top-color: #62f3ff; border-left-color: rgba(98, 243, 255, .5); animation: hudspin 2.562s linear infinite reverse; filter: drop-shadow(0 0 5px #62f3ff); }
+.hudreactor .c { inset: 20px; border: 1px solid rgba(98, 243, 255, .25); border-right-color: var(--mark); animation: hudspin 5.124s linear infinite; }
+.hudreactor .d { inset: 30px; border: 2px solid #62f3ff; box-shadow: 0 0 22px #62f3ff, inset 0 0 18px #62f3ff; }
+.hudreactor .e { inset: 30px; border: 2px solid #62f3ff; opacity: 0; }
+.hudreactor .f { inset: 40px; background: radial-gradient(circle, #fff 0%, #c9fdff 25%, #62f3ff 55%, transparent 72%); }
+/* On every beat of the song (the page adds .beat, and .beat1 on beat 1 of the bar) the ring kicks,
+   a shock wave leaves it and the core flashes; beat 1 kicks in purple, like its beat mark. */
+.hudreactor.beat .d { animation: hudbeat .5s ease-out; }
+.hudreactor.beat .e { animation: hudshock .6s ease-out; }
+.hudreactor.beat .f { animation: hudcore .45s ease-out; }
+.hudreactor.beat1 .d { border-color: var(--mark); box-shadow: 0 0 30px var(--mark), inset 0 0 22px var(--mark); }
+.hudreactor.beat1 .e { border-color: var(--mark); }
+@keyframes hudspin { to { transform: rotate(360deg); } }
+@keyframes hudbeat { 0% { transform: scale(1.08); filter: brightness(1.5); } 100% { transform: scale(1); } }
+@keyframes hudshock { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(2); opacity: 0; } }
+@keyframes hudcore { 0% { filter: brightness(1.7); } 100% { filter: brightness(1); } }
+.hudplayer { display: flex; align-items: center; gap: 14px; position: sticky; top: -10px; z-index: 3; padding: 8px 0; margin: -10px 0 0;
+  background: linear-gradient(rgba(3, 18, 30, .96) 80%, rgba(3, 18, 30, 0)); }
+.hudread { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 2px 14px; font-size: 10px; letter-spacing: .25em; color: var(--muted); text-transform: uppercase; }
+.hudread b { font: 700 20px "Cascadia Mono", Consolas, monospace; letter-spacing: 0; color: #62f3ff; text-shadow: 0 0 10px #62f3ff; }
+#hudnet { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: none; }
+.hudflash { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: none; opacity: 0; background: radial-gradient(circle at 70% 40%, rgba(98, 243, 255, .12), transparent 55%); }
+body.view-dance #hudnet, body.view-dance .hudflash { display: block; }
+.hudflash.beat { animation: hudflash .6s ease-out; }
+@keyframes hudflash { 0% { opacity: 1; } 60%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hudreactor i, .hudflash, body.view-dance .pane::before, body.view-dance .panetitle::before { animation: none !important; } }
+
 </style>
 </head>
 <body>
@@ -931,8 +1073,9 @@ ul.pts .ln-no { font-family: Consolas, monospace; color: var(--accent); font-wei
   <div class="panebar"><span class="panetitle">Dance</span><span class="panectl"><button type="button" data-act="left" title="Flytta åt vänster" aria-label="Flytta Dance åt vänster">◀</button><button type="button" data-act="right" title="Flytta åt höger" aria-label="Flytta Dance åt höger">▶</button><button type="button" data-act="zoomout" title="Zooma ut (Ctrl + mushjul)" aria-label="Zooma ut Dance">−</button><span class="zoomval">100 %</span><button type="button" data-act="zoomin" title="Zooma in (Ctrl + mushjul)" aria-label="Zooma in Dance">+</button><button type="button" data-act="zoomreset" title="Tillbaka till 100 %" aria-label="Återställ zoomen för Dance">⟲</button><button type="button" data-act="hide" title="Dölj vyn" aria-label="Dölj Dance">×</button></span></div>
   <div class="panebody" id="dancepane">
     <p class="runnote">The Farm Called C-Sharp. Texten lyser i takt med låten. Klicka på en rad för att hoppa dit i låten.</p>
+    <div class="hudplayer"><div class="hudreactor" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="e"></i><i class="d"></i><i class="f"></i></div><div style="flex: 1; min-width: 0"><div class="hudread"><span><b id="hudbpm">93.7</b></span><span><b>4/4</b></span><span>BPM</span><span>Takt</span></div>
     <audio id="danceaudio" controls preload="metadata" src="ljud/the-farm-called-c-sharp.mp3"></audio>
-    <div class="beatbar" id="beatbar" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="beatbar" id="beatbar" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div></div>
     <div class="lyrics" id="lyrics"></div>
   </div>
   </section>
