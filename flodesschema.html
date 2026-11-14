@@ -446,6 +446,7 @@ body.view-dance #hudnet, body.view-dance .hudflash { display: block; }
 </style>
 </head>
 <body>
+<canvas id="hudnet" aria-hidden="true"></canvas><div class="hudflash" aria-hidden="true"></div>
 <header>
   <h1>Robust inköpslista – startkoden och felen</h1>
   <span class="hint">Växla mellan Problem och Lösning. Etiketterna 1-1, 1-2 … visar felens lager och U1-1 … utbyggnadens. Fel- och U-knapparna markerar sina rutor och visar alla lager. Ctrl+klick markerar fler rutor. Pilarna ← → bläddrar.</span>
@@ -2955,8 +2956,58 @@ if (typeof module !== 'undefined') module.exports = KK2;
     els.forEach(function (e) { e.classList.add(pos === 0 ? 'bop-down' : 'bop'); });
     if (line) { dSway = -dSway; line.classList.add(dSway > 0 ? 'sway-r' : 'sway-l'); }
     beatDots[pos].classList.add('on');
+    // Asked for: the HUD look, pulsing to the music. The arc reactor kicks and the background
+    // flashes on the song's own beats (purple on beat 1), and the particle net brightens.
+    [hudReactor, hudFlash].forEach(function (e) { e.classList.remove('beat', 'beat1'); });
+    void hudReactor.offsetWidth;
+    hudReactor.classList.add('beat');
+    hudFlash.classList.add('beat');
+    if (pos === 0) hudReactor.classList.add('beat1');
+    hudLastBeat = performance.now();
   }
   dAudio.addEventListener('pause', danceStill);
+
+  // The HUD's particle net behind the views: slow drifting points joined by thin lines, brighter for a
+  // moment after each beat. It only runs while Dance is chosen, and stands still when the visitor
+  // asks for less motion.
+  var hudReactor = document.querySelector('.hudreactor'), hudFlash = document.querySelector('.hudflash');
+  var hudNet = document.getElementById('hudnet'), hudCtx = hudNet.getContext('2d'), hudPts = [], hudRaf = 0, hudLastBeat = -1e9;
+  var hudStill = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('hudbpm').textContent = DATA.dance.bpm.toFixed(1);
+  function hudSize() {
+    hudNet.width = innerWidth;
+    hudNet.height = innerHeight;
+    if (!hudPts.length) {
+      for (var k = 0; k < 100; k++) hudPts.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3 });
+    }
+  }
+  function hudDraw(now) {
+    var since = (now - hudLastBeat) / 640, pulse = 1 + 1.5 * Math.max(0, 1 - since * 2.5);
+    hudCtx.clearRect(0, 0, hudNet.width, hudNet.height);
+    for (var i = 0; i < hudPts.length; i++) {
+      var p = hudPts[i];
+      if (!hudStill) { p.x += p.vx; p.y += p.vy; }
+      if (p.x < 0 || p.x > hudNet.width) p.vx *= -1;
+      if (p.y < 0 || p.y > hudNet.height) p.vy *= -1;
+      for (var j = i + 1; j < hudPts.length; j++) {
+        var q = hudPts[j], d = Math.hypot(p.x - q.x, p.y - q.y);
+        if (d < 140) {
+          hudCtx.strokeStyle = 'rgba(98,243,255,' + (0.1 * (1 - d / 140) * pulse).toFixed(3) + ')';
+          hudCtx.beginPath(); hudCtx.moveTo(p.x, p.y); hudCtx.lineTo(q.x, q.y); hudCtx.stroke();
+        }
+      }
+      hudCtx.fillStyle = 'rgba(170,245,255,' + (0.4 * pulse).toFixed(2) + ')';
+      hudCtx.fillRect(p.x - 1, p.y - 1, 2, 2);
+    }
+    if (!hudStill && document.body.classList.contains('view-dance')) hudRaf = requestAnimationFrame(hudDraw);
+  }
+  function hudRun(on) {
+    cancelAnimationFrame(hudRaf);
+    if (!on) return;
+    hudSize();
+    hudRaf = requestAnimationFrame(hudDraw);
+  }
+  addEventListener('resize', function () { if (document.body.classList.contains('view-dance')) hudSize(); });
   // Asked for: the lyrics mapped to the flow chart, the class diagram and the code. Each line has
   // targets (from the build's dance map), each from a word on: a class, a part of a class, a bug or
   // extension, or a line in the code now. The target becomes the focus, as if it was clicked, so
@@ -3032,6 +3083,7 @@ if (typeof module !== 'undefined') module.exports = KK2;
   // back as they were.
   function danceViewChanged(on) {
     if (!layout) return;
+    hudRun(on);
     if (on && !layout.beforeDance) {
       layout.beforeDance = { panel: !!layout.hidden.panel, run: !!layout.hidden.run };
       layout.hidden.panel = true;
