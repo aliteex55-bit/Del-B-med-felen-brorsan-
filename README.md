@@ -166,6 +166,18 @@ Nackdelen med `false` är att man kan glömma att titta på svaret. Då försvin
 
 **Provat:** lärarens lista sparad ger filen `budget;1000`, `15;Mjölk`, `32;Bröd` och `89;Ost`. En fil med `budget;500`, `300;A` och `300;B` ger taket 500 kr: `B` hoppas över, och 300 kr till i menyn ger "… det finns 200 kr kvar". Taket 500 kr är kvar efter sparning och omstart. `budget;abc`, `budget;`, `budget;99999999999` och `budget;-5` ger till exempel "Rad 1 i items.txt kunde inte läsas, budgettaket får inte vara negativt: budget;-5. Budgettaket är 1000 kr.", och varorna läses in som vanligt. `budget;0` är tillåtet. Trasiga varurader efter budgetraden får rätt radnummer, räknat från filens början.
 
+### U5: using med StreamWriter i Save
+
+**Vad krävdes:** en frivillig extrauppgift, som inte påverkar betyget: `finally` eller `using` någonstans där det gör nytta.
+
+**Före:** `Save` byggde först en lista med alla rader och skrev sedan hela filen på en gång med `File.WriteAllText`. Programmet använde varken `using` eller `finally`.
+
+**Så gjordes det:** `Save` skriver varje rad direkt till filen med en `StreamWriter`, i ett `using`-block. Budgetraden från U4 kommer först, sedan varorna. `writer.NewLine = "\r\n"` ger samma radbrytningar som förut, oavsett vilken dator programmet körs på. `catch`-blocken och "Listan är sparad." från fel 6 är oförändrade ([da227f2](https://github.com/aliteex55-bit/Del1-2brooor/commit/da227f2)).
+
+**Varför `using` gör nytta här:** en `StreamWriter` håller filen öppen tills den stängs. `using` stänger den när blocket tar slut, även när skrivningen misslyckas halvvägs och ett undantag hoppar till `catch`. Utan `using` kunde filen bli kvar öppen och låst för andra program. `using` gör samma sak som ett `finally` som stänger filen, fast kortare.
+
+**Provat:** den gamla och den nya versionen sparade samma lista till byte för byte samma fil. En vanlig fil ger "Listan är sparad.", och den nya varan finns i filen. En skrivskyddad fil och en fil som ett annat program har öppen ger samma meddelanden som förut, och filen är oförändrad. Att filen stängs när skrivningen avbryts halvvägs gick inte att framkalla i ett test, utan följer av hur `using` fungerar.
+
 ## Klassdiagram
 
 Programmet efter ändringarna. `Program`, `ShoppingList` och `Item` är de tre klasserna från uppgiften, och `InvalidLineException` kom till i extrauppgiften U3. `+` betyder `public` och `-` betyder `private`.
@@ -212,7 +224,7 @@ classDiagram
 ```
 
 - **Program** är `Program.cs`, därav märket `<<Program.cs>>`. Filen har ingen egen klass i koden, eftersom den använder toppnivåsatser (top-level statements), men kompilatorn lägger raderna i en metod i en klass som heter `Program`. Den skapar listan med budgettaket 1000 kr, visar menyn och skapar en `Item` av namnet och priset som användaren skriver. `list` har inget `+` eller `-`, för den är en lokal variabel och inte ett fält.
-- **ShoppingList** har varorna i listan `items` och sparar dem i filen `path`. `Budget` sätts i konstruktorn, och sedan U4 även av `Load` när filen har ett sparat tak. Den har `private set`, så kod utanför `ShoppingList` kan bara läsa den. `Add` och `RemoveAt` returnerar `true` eller `false`. `Load` läser filen (`items.txt`): taket från första raden med hjälp av `ParseBudget`, och sedan en `Item` av varje rad som går att läsa med hjälp av `ParseLine`, som läggs in med `Add`. `ParseLine` och `ParseBudget` är `private`, så bara `ShoppingList` själv kan anropa dem. `Save` skriver filen, med budgettaket först.
+- **ShoppingList** har varorna i listan `items` och sparar dem i filen `path`. `Budget` sätts i konstruktorn, och sedan U4 även av `Load` när filen har ett sparat tak. Den har `private set`, så kod utanför `ShoppingList` kan bara läsa den. `Add` och `RemoveAt` returnerar `true` eller `false`. `Load` läser filen (`items.txt`): taket från första raden med hjälp av `ParseBudget`, och sedan en `Item` av varje rad som går att läsa med hjälp av `ParseLine`, som läggs in med `Add`. `ParseLine` och `ParseBudget` är `private`, så bara `ShoppingList` själv kan anropa dem. `Save` skriver filen, med budgettaket först, med en `StreamWriter` i ett `using`-block.
 - **Item** är en vara med namn och pris. Konstruktorn kastar `ArgumentException` för ett tomt namn och `ArgumentOutOfRangeException` för ett negativt pris.
 - **InvalidLineException** är vår egen undantagstyp från U3. Den har radnumret i `LineNumber` och två konstruktorer. Båda tar emot radnumret och ett meddelande, och den andra tar också emot undantaget som orsakade felet. Rutan `Exception` är den inbyggda klassen i .NET som den ärver från.
 
