@@ -14,6 +14,10 @@ dotnet run
 
 [Klickbart flödesschema över startkoden](https://aliteex55-bit.github.io/Del1-2brooor/flodesschema.html). Röda etiketter som 1-1 visar var felen fanns, fel och lager. I läget Lösning blir de gröna och visar koden efter lagningen.
 
+## Kodförklaring
+
+[Koden som en bondgård](KODFORKLARING.md): hela programmet förklarat med en bonde, en lada, djur och en loggbok, där varje del motsvarar en del av koden.
+
 ## Felrapport
 
 ### Fel 1: programmet kraschade direkt vid start
