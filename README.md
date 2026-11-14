@@ -151,6 +151,21 @@ Nackdelen med `false` är att man kan glömma att titta på svaret. Då försvin
 
 **Provat:** en fil med `15;`, `-5;Ost`, `   ;Tom`, `Ost`, en tom rad och `abc;Ost` ger ett meddelande för varje trasig rad med rätt radnummer, till exempel "Rad 2 i items.txt kunde inte läsas och hoppades över, priset är negativt: -5;Ost". Den tomma raden hoppas över utan meddelande, som förut. Ett litet testprogram utanför repot, som anropade den privata `ParseLine` med reflection, visade att inner exception är `ArgumentException` för `15;` och `ArgumentOutOfRangeException` för `-5;Ost`. Lärarens fil, budgettaket och menyn fungerar som förut.
 
+### U4: Budgettaket sparas i filen
+
+**Vad krävdes:** en frivillig extrauppgift, som inte påverkar betyget: spara budgettaket i filen tillsammans med varorna.
+
+**Före:** budgettaket sparades inte. Efter en omstart gällde alltid 1000 kr från `Program.cs`, vad listan än hade haft.
+
+**Så gjordes det, i två steg:**
+
+1. `Save` skriver budgettaket som första rad, till exempel `budget;1000`, och sedan varorna som förut. `Load` läser taket från första raden om den börjar med `budget;`, och varorna börjar då på rad 2. `Budget` fick `private set`, så att `Load` kan sätta taket, medan kod utanför `ShoppingList` fortfarande bara kan läsa det. En fil utan budgetrad, till exempel lärarens, fungerar som förut med 1000 kr ([3c6283f](https://github.com/aliteex55-bit/Del1-2brooor/commit/3c6283f)).
+2. En budgetrad som inte går att läsa, eller ett negativt tak, ger ett meddelande. Den nya metoden `ParseBudget` kastar `InvalidLineException` från U3 för rad 1, `Load` fångar den, och taket 1000 kr gäller ([5adea16](https://github.com/aliteex55-bit/Del1-2brooor/commit/5adea16)).
+
+**Varför första raden:** `Load` lägger in varorna med `Add`, som prövar dem mot taket. Därför måste taket vara läst innan den första varan läggs in.
+
+**Provat:** lärarens lista sparad ger filen `budget;1000`, `15;Mjölk`, `32;Bröd` och `89;Ost`. En fil med `budget;500`, `300;A` och `300;B` ger taket 500 kr: `B` hoppas över, och 300 kr till i menyn ger "… det finns 200 kr kvar". Taket 500 kr är kvar efter sparning och omstart. `budget;abc`, `budget;`, `budget;99999999999` och `budget;-5` ger till exempel "Rad 1 i items.txt kunde inte läsas, budgettaket får inte vara negativt: budget;-5. Budgettaket är 1000 kr.", och varorna läses in som vanligt. `budget;0` är tillåtet. Trasiga varurader efter budgetraden får rätt radnummer, räknat från filens början.
+
 ## Klassdiagram
 
 Programmet efter ändringarna. `Program`, `ShoppingList` och `Item` är de tre klasserna från uppgiften, och `InvalidLineException` kom till i extrauppgiften U3. `+` betyder `public` och `-` betyder `private`.
@@ -166,7 +181,7 @@ classDiagram
     class ShoppingList {
         -List~Item~ items
         -string path
-        +int Budget
+        +int Budget get, private set
         +ShoppingList(string path, int budget)
         +Add(Item item) bool
         +RemoveAt(int number) bool
@@ -176,6 +191,7 @@ classDiagram
         +Save()
         +Load()
         -ParseLine(string line, int lineNumber) Item
+        -ParseBudget(string line) int
     }
     class Item {
         +string Name
@@ -196,7 +212,7 @@ classDiagram
 ```
 
 - **Program** är `Program.cs`, därav märket `<<Program.cs>>`. Filen har ingen egen klass i koden, eftersom den använder toppnivåsatser (top-level statements), men kompilatorn lägger raderna i en metod i en klass som heter `Program`. Den skapar listan med budgettaket 1000 kr, visar menyn och skapar en `Item` av namnet och priset som användaren skriver. `list` har inget `+` eller `-`, för den är en lokal variabel och inte ett fält.
-- **ShoppingList** har varorna i listan `items` och sparar dem i filen `path`. `Budget` kan bara läsas, den sätts i konstruktorn. `Add` och `RemoveAt` returnerar `true` eller `false`. `Load` läser filen (`items.txt`), skapar en `Item` av varje rad som går att läsa med hjälp av `ParseLine` och lägger in den med `Add`. `ParseLine` är `private`, så bara `ShoppingList` själv kan anropa den. `Save` skriver filen.
+- **ShoppingList** har varorna i listan `items` och sparar dem i filen `path`. `Budget` sätts i konstruktorn, och sedan U4 även av `Load` när filen har ett sparat tak. Den har `private set`, så kod utanför `ShoppingList` kan bara läsa den. `Add` och `RemoveAt` returnerar `true` eller `false`. `Load` läser filen (`items.txt`): taket från första raden med hjälp av `ParseBudget`, och sedan en `Item` av varje rad som går att läsa med hjälp av `ParseLine`, som läggs in med `Add`. `ParseLine` och `ParseBudget` är `private`, så bara `ShoppingList` själv kan anropa dem. `Save` skriver filen, med budgettaket först.
 - **Item** är en vara med namn och pris. Konstruktorn kastar `ArgumentException` för ett tomt namn och `ArgumentOutOfRangeException` för ett negativt pris.
 - **InvalidLineException** är vår egen undantagstyp från U3. Den har radnumret i `LineNumber` och två konstruktorer. Båda tar emot radnumret och ett meddelande, och den andra tar också emot undantaget som orsakade felet. Rutan `Exception` är den inbyggda klassen i .NET som den ärver från.
 
